@@ -47,28 +47,23 @@ You are a helpful assistant for police data analysis. You answer questions about
 {TABLE_SCHEMA}
 
 IMPORTANT:
-- ALWAYS generate a SQL query, even for simple responses like "okay" or "thanks".
-- For "okay", "thanks", or similar acknowledgments, generate: SELECT 'Acknowledged' as response;
-- For questions about case counts, use SELECT COUNT(*).
+- For comparisons (e.g., year-wise, district-wise), ALWAYS generate a single SQL query using GROUP BY or WHERE ... IN (...).
+- NEVER generate multiple SQL statements separated by semicolons.
+- For example, for 'Compare rape cases from 2021 to 2024', generate:
+  SELECT YEAR(date) as year, COUNT(*) as count FROM fir_records_CAW WHERE major_head LIKE '%rape%' AND YEAR(date) IN (2021,2022,2023,2024) GROUP BY YEAR(date);
+- For counts, use SELECT COUNT(*).
 - For lists, use SELECT * with appropriate WHERE clauses.
-- NEVER generate conversational responses - only SQL queries.
 - Only return the SQL query, nothing else.
 
 EXAMPLES:
+Q: Compare rape cases from 2021 to 2024
+A: SELECT YEAR(date) as year, COUNT(*) as count FROM fir_records_CAW WHERE major_head LIKE '%rape%' AND YEAR(date) IN (2021,2022,2023,2024) GROUP BY YEAR(date);
+
+Q: Compare theft cases in 2022 and 2023
+A: SELECT YEAR(date) as year, COUNT(*) as count FROM fir_records_CAW WHERE major_head LIKE '%theft%' AND YEAR(date) IN (2022,2023) GROUP BY YEAR(date);
+
 Q: How many rape cases in 2024?
 A: SELECT COUNT(*) FROM fir_records_CAW WHERE major_head LIKE '%rape%' AND YEAR(date) = 2024;
-
-Q: List all rape cases in the year 2024
-A: SELECT * FROM fir_records_CAW WHERE major_head LIKE '%rape%' AND YEAR(date) = 2024;
-
-Q: okay
-A: SELECT 'Acknowledged' as response;
-
-Q: thanks
-A: SELECT 'You are welcome' as response;
-
-Q: How many theft cases in 2023?
-A: SELECT COUNT(*) FROM fir_records_CAW WHERE major_head LIKE '%theft%' AND YEAR(date) = 2023;
 """
 
 app = FastAPI()
@@ -473,6 +468,10 @@ async def chat(request: Request):
             temperature=0,
         )
         sql_query = response.choices[0].message.content.strip().strip("```sql").strip("```").strip()
+
+        # Reject multiple SQL statements
+        if ';' in sql_query:
+            return {"error": "Invalid SQL: multiple statements detected. Please rephrase your question.", "sql": sql_query}
 
         # After generating sql_query, check if it looks like SQL
         if not sql_query.strip().upper().startswith(('SELECT', 'INSERT', 'UPDATE', 'DELETE', 'SHOW', 'DESCRIBE')):
