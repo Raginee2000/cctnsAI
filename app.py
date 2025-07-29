@@ -444,15 +444,25 @@ async def chat(request: Request):
     user_message = data["message"]
     chat_history = data.get("history", [])
 
+    # Check for simple acknowledgments
+    simple_responses = ["okay", "ok", "thanks", "thank you", "good", "fine", "yes", "no", "nothing"]
+    if user_message.lower().strip() in simple_responses:
+        return {"answer": "Understood! How else can I help you with the FIR data?", "sql": "SELECT 'Acknowledged' as response"}
+
     sql_query = ""  # Always initialize
 
-    # Build messages for OpenAI to generate SQL
+    # Build messages for OpenAI to generate SQL - SANITIZE ALL CONTENT
     messages = [{"role": "system", "content": SYSTEM_PROMPT}]
     for turn in chat_history:
-        messages.append({"role": "user", "content": turn.get("user", "")})
-        if "bot" in turn:
-            messages.append({"role": "assistant", "content": turn["bot"]})
-    messages.append({"role": "user", "content": user_message})
+        user_content = str(turn.get("user", "")) if turn.get("user") is not None else ""
+        bot_content = str(turn.get("bot", "")) if turn.get("bot") is not None else ""
+        
+        if user_content.strip():
+            messages.append({"role": "user", "content": user_content})
+        if bot_content.strip():
+            messages.append({"role": "assistant", "content": bot_content})
+    
+    messages.append({"role": "user", "content": str(user_message)})
 
     try:
         # Step 1: Use OpenAI to convert question to SQL
@@ -463,6 +473,10 @@ async def chat(request: Request):
             temperature=0,
         )
         sql_query = response.choices[0].message.content.strip().strip("```sql").strip("```").strip()
+
+        # After generating sql_query, check if it looks like SQL
+        if not sql_query.strip().upper().startswith(('SELECT', 'INSERT', 'UPDATE', 'DELETE', 'SHOW', 'DESCRIBE')):
+            return {"answer": "I understand. How else can I help you with the FIR data?", "sql": "SELECT 'Acknowledged' as response"}
 
         # Step 2: Run SQL query
         with engine.connect() as conn:
