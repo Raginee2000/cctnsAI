@@ -81,7 +81,7 @@ function ChatFir() {
   const [groupField, setGroupField] = useState("major_head");
   const [showReportForm, setShowReportForm] = useState(false);
   const [currentReportForm, setCurrentReportForm] = useState<any>(null);
-  const [formData, setFormData] = useState<any>({});
+  const [formData, setFormData] = useState<Record<string, any>>({});
 
   const handleFirOptionClick = (option: string) => {
     sendMessage(option);
@@ -114,7 +114,7 @@ function ChatFir() {
   };
 
   const handleFormInputChange = (fieldName: string, value: any) => {
-    setFormData(prev => ({
+    setFormData((prev: Record<string, any>) => ({
       ...prev,
       [fieldName]: value
     }));
