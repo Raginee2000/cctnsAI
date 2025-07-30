@@ -47,10 +47,15 @@ html, body, #root {
   display: flex;
   flex-direction: column;
   margin-bottom: 20px;
+  width: 100%;
 }
 
 .message-row.user {
   align-items: flex-end;
+}
+
+.message-row.bot {
+  align-items: flex-start;
 }
 
 .user-message {
@@ -59,10 +64,12 @@ html, body, #root {
   padding: 15px 20px;
   border-radius: 20px 20px 4px 20px;
   max-width: 70%;
+  min-width: 200px;
   word-break: break-word;
   box-shadow: 0 3px 10px rgba(0,0,0,0.1);
   font-weight: 500;
   font-size: 15px;
+  text-align: right;
 }
 
 .bot-message {
@@ -71,11 +78,13 @@ html, body, #root {
   padding: 15px 20px;
   border-radius: 20px 20px 20px 4px;
   max-width: 80%;
+  min-width: 200px;
   word-break: break-word;
   box-shadow: 0 3px 10px rgba(0,0,0,0.1);
   border-left: 4px solid #667eea;
   font-size: 15px;
   line-height: 1.5;
+  text-align: left;
 }
 
 .bot-message b {
@@ -90,62 +99,74 @@ html, body, #root {
   border-radius: 12px;
   padding: 20px;
   margin: 10px 0;
+  width: 100%;
 }
 
 .fir-analysis-title {
   font-size: 18px;
   font-weight: 600;
   color: #495057;
-  margin-bottom: 15px;
+  margin-bottom: 20px;
   text-align: center;
 }
 
 .fir-options-list {
   display: flex;
-  flex-direction: column;
-  gap: 12px;
+  flex-direction: row;
+  gap: 15px;
+  justify-content: center;
+  flex-wrap: wrap;
 }
 
 .fir-option {
   background: white;
   border: 2px solid #e9ecef;
-  border-radius: 8px;
-  padding: 15px;
+  border-radius: 12px;
+  padding: 20px;
   cursor: pointer;
   transition: all 0.3s ease;
   display: flex;
+  flex-direction: column;
   align-items: center;
   gap: 12px;
   user-select: none;
+  min-width: 180px;
+  flex: 1;
+  max-width: 250px;
+  text-align: center;
 }
 
 .fir-option:hover {
   border-color: #667eea;
   background: #f8f9ff;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.2);
 }
 
 .fir-option:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
 }
 
 .fir-option-number {
-  background: #667eea;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
-  width: 30px;
-  height: 30px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 600;
-  font-size: 14px;
+  font-size: 16px;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
 }
 
 .fir-option-content {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .fir-option-title {
@@ -157,7 +178,8 @@ html, body, #root {
 
 .fir-option-description {
   color: #6c757d;
-  font-size: 14px;
+  font-size: 13px;
+  line-height: 1.4;
 }
 
 .input-area {
@@ -207,6 +229,9 @@ html, body, #root {
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
 }
 
 .table-header {
@@ -226,23 +251,25 @@ table {
   width: 100%;
   border-collapse: collapse;
   font-size: 13px;
+  min-width: 600px;
 }
 
 th {
   background: #f8f9fa;
-  padding: 15px 10px;
+  padding: 15px 12px;
   text-align: left;
   font-weight: 600;
   color: #495057;
   border-bottom: 2px solid #dee2e6;
   font-size: 12px;
+  white-space: nowrap;
 }
 
 td {
-  padding: 12px 10px;
+  padding: 12px 12px;
   border-bottom: 1px solid #e9ecef;
   font-size: 12px;
-  max-width: 150px;
+  max-width: 200px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -416,6 +443,7 @@ tr:hover {
   
   .user-message, .bot-message {
     max-width: 85%;
+    min-width: 150px;
     font-size: 14px;
   }
   
@@ -447,11 +475,28 @@ tr:hover {
   }
   
   .fir-options-list {
+    flex-direction: column;
     gap: 10px;
   }
   
   .fir-option {
-    padding: 12px;
+    padding: 15px;
+    min-width: auto;
+    max-width: none;
+  }
+  
+  .table-wrapper {
+    margin: 10px 0;
+  }
+  
+  table {
+    min-width: 400px;
+    font-size: 11px;
+  }
+  
+  th, td {
+    padding: 8px 6px;
+    font-size: 11px;
   }
 }
 

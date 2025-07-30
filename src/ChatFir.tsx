@@ -356,7 +356,7 @@ function ChatFir() {
       
       <div className="messages-container">
         {messages.map((msg, i) => (
-          <div key={i} className={`message-row${msg.user ? ' user' : ''}`}>
+          <div key={i} className={`message-row${msg.user ? ' user' : ' bot'}`}>
             {msg.user && (
               <div className="user-message">
                 <b>You:</b> {msg.user}
