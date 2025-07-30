@@ -170,63 +170,70 @@ async def chat(request: Request):
         }
 
     # Handle analysis requests
-    if user_message.lower().strip() in ['1', '2', '3'] and chat_history and chat_history[-1].get('fir_content'):
-        fir_content = chat_history[-1]['fir_content']
-        choice = user_message.lower().strip()
+    if user_message.lower().strip() in ['1', '2', '3'] and chat_history:
+        # Look for FIR content in the recent history
+        fir_content = None
+        for turn in reversed(chat_history):
+            if turn.get('fir_content'):
+                fir_content = turn['fir_content']
+                break
         
-        if choice == '1':
-            # Summarize only
-            summary_response = client.chat.completions.create(
-                model="gpt-3.5-turbo",
-                messages=[
-                    {"role": "system", "content": FIR_SUMMARY_PROMPT},
-                    {"role": "user", "content": f"Please summarize this FIR content:\n\n{fir_content}"}
-                ],
-                max_tokens=500,
-                temperature=0.3,
-            )
-            summary = summary_response.choices[0].message.content.strip()
-            return {"answer": f"**FIR Summary:**\n\n{summary}", "sql": None}
-        
-        elif choice == '2':
-            # Analyze and suggest documents
-            analysis_response = client.chat.completions.create(
-                model="gpt-3.5-turbo",
-                messages=[
-                    {"role": "system", "content": FIR_ANALYSIS_PROMPT},
-                    {"role": "user", "content": f"Please analyze this FIR content and suggest relevant document types:\n\n{fir_content}"}
-                ],
-                max_tokens=600,
-                temperature=0.3,
-            )
-            analysis = analysis_response.choices[0].message.content.strip()
-            return {"answer": f"**FIR Analysis and Document Suggestions:**\n\n{analysis}", "sql": None}
-        
-        elif choice == '3':
-            # Both summarize and analyze
-            summary_response = client.chat.completions.create(
-                model="gpt-3.5-turbo",
-                messages=[
-                    {"role": "system", "content": FIR_SUMMARY_PROMPT},
-                    {"role": "user", "content": f"Please summarize this FIR content:\n\n{fir_content}"}
-                ],
-                max_tokens=500,
-                temperature=0.3,
-            )
-            summary = summary_response.choices[0].message.content.strip()
+        if fir_content:
+            choice = user_message.lower().strip()
             
-            analysis_response = client.chat.completions.create(
-                model="gpt-3.5-turbo",
-                messages=[
-                    {"role": "system", "content": FIR_ANALYSIS_PROMPT},
-                    {"role": "user", "content": f"Please analyze this FIR content and suggest relevant document types:\n\n{fir_content}"}
-                ],
-                max_tokens=600,
-                temperature=0.3,
-            )
-            analysis = analysis_response.choices[0].message.content.strip()
+            if choice == '1':
+                # Summarize only
+                summary_response = client.chat.completions.create(
+                    model="gpt-3.5-turbo",
+                    messages=[
+                        {"role": "system", "content": FIR_SUMMARY_PROMPT},
+                        {"role": "user", "content": f"Please summarize this FIR content:\n\n{fir_content}"}
+                    ],
+                    max_tokens=500,
+                    temperature=0.3,
+                )
+                summary = summary_response.choices[0].message.content.strip()
+                return {"answer": f"**FIR Summary:**\n\n{summary}", "sql": None}
             
-            return {"answer": f"**FIR Summary:**\n\n{summary}\n\n**Analysis and Document Suggestions:**\n\n{analysis}", "sql": None}
+            elif choice == '2':
+                # Analyze and suggest documents
+                analysis_response = client.chat.completions.create(
+                    model="gpt-3.5-turbo",
+                    messages=[
+                        {"role": "system", "content": FIR_ANALYSIS_PROMPT},
+                        {"role": "user", "content": f"Please analyze this FIR content and suggest relevant document types:\n\n{fir_content}"}
+                    ],
+                    max_tokens=600,
+                    temperature=0.3,
+                )
+                analysis = analysis_response.choices[0].message.content.strip()
+                return {"answer": f"**FIR Analysis and Document Suggestions:**\n\n{analysis}", "sql": None}
+            
+            elif choice == '3':
+                # Both summarize and analyze
+                summary_response = client.chat.completions.create(
+                    model="gpt-3.5-turbo",
+                    messages=[
+                        {"role": "system", "content": FIR_SUMMARY_PROMPT},
+                        {"role": "user", "content": f"Please summarize this FIR content:\n\n{fir_content}"}
+                    ],
+                    max_tokens=500,
+                    temperature=0.3,
+                )
+                summary = summary_response.choices[0].message.content.strip()
+                
+                analysis_response = client.chat.completions.create(
+                    model="gpt-3.5-turbo",
+                    messages=[
+                        {"role": "system", "content": FIR_ANALYSIS_PROMPT},
+                        {"role": "user", "content": f"Please analyze this FIR content and suggest relevant document types:\n\n{fir_content}"}
+                    ],
+                    max_tokens=600,
+                    temperature=0.3,
+                )
+                analysis = analysis_response.choices[0].message.content.strip()
+                
+                return {"answer": f"**FIR Summary:**\n\n{summary}\n\n**Analysis and Document Suggestions:**\n\n{analysis}", "sql": None}
 
     sql_query = ""  # Always initialize
 
