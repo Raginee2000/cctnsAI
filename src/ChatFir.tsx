@@ -130,6 +130,39 @@ function ChatFir() {
 
   const renderBotMessage = (msg: any) => {
     if (typeof msg === "string") {
+      // Check if this is a FIR analysis options message
+      if (msg.includes("I see you've provided FIR content") && msg.includes("Please respond with 1, 2, or 3")) {
+        return (
+          <div className="fir-analysis-options">
+            <div className="fir-analysis-title">
+              FIR Content Analysis Options
+            </div>
+            <div className="fir-options-list">
+              <div className="fir-option">
+                <div className="fir-option-number">1</div>
+                <div className="fir-option-content">
+                  <div className="fir-option-title">Summarize the FIR</div>
+                  <div className="fir-option-description">Create a concise summary of the case</div>
+                </div>
+              </div>
+              <div className="fir-option">
+                <div className="fir-option-number">2</div>
+                <div className="fir-option-content">
+                  <div className="fir-option-title">Analyze and suggest documents</div>
+                  <div className="fir-option-description">Determine case type and suggest relevant reports</div>
+                </div>
+              </div>
+              <div className="fir-option">
+                <div className="fir-option-number">3</div>
+                <div className="fir-option-content">
+                  <div className="fir-option-title">Both</div>
+                  <div className="fir-option-description">Summarize and analyze the FIR content</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      }
       return msg;
     } else if (Array.isArray(msg) && msg.length > 0) {
       return (
