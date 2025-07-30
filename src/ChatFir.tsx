@@ -200,6 +200,7 @@ function ChatFir() {
     if (
       (chartType === 'pie' || chartType === 'bar' || chartType === 'line') &&
       chartData.length > 0 &&
+      label && // Add null check for label
       (!chartData[0].count || !chartData[0][label]) // Check if data is already aggregated
     ) {
       dataForChart = groupByField(chartData, groupField);
