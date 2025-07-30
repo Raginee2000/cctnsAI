@@ -89,7 +89,6 @@ function ChatFir() {
 
   const handleReportClick = async (reportType: string) => {
     console.log('Clicking report:', reportType);
-    console.log('Available reports in REPORT_FORMS:', Object.keys(REPORT_FORMS || {}));
     
     try {
       const url = `http://localhost:8000/report-form/${encodeURIComponent(reportType)}`;
