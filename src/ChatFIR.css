@@ -116,6 +116,7 @@ html, body, #root {
   display: flex;
   align-items: center;
   gap: 12px;
+  user-select: none;
 }
 
 .fir-option:hover {
@@ -123,6 +124,11 @@ html, body, #root {
   background: #f8f9ff;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+}
+
+.fir-option:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
 }
 
 .fir-option-number {

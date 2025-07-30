@@ -30,6 +30,10 @@ function ChatFir() {
   const [chartData, setChartData] = useState<any[]>([]);
   const [groupField, setGroupField] = useState("major_head");
 
+  const handleFirOptionClick = (option: string) => {
+    sendMessage(option);
+  };
+
   const buildHistory = () => {
     const maxHistory = 8; // Limit history to last 8 turns
     return messages
@@ -42,14 +46,15 @@ function ChatFir() {
       }));
   };
 
-  const sendMessage = async () => {
-    if (!input.trim()) return;
-    setMessages(msgs => [...msgs, { user: input }]);
+  const sendMessage = async (customInput?: string) => {
+    const messageToSend = customInput || input;
+    if (!messageToSend.trim()) return;
+    setMessages(msgs => [...msgs, { user: messageToSend }]);
     setInput("");
     setChartType(null); // Reset chart on new message
     try {
       const res = await axios.post("http://localhost:8000/chat", {
-        message: input,
+        message: messageToSend,
         history: buildHistory() // Send sanitized history
       });
       if (res.data.error) {
@@ -71,13 +76,13 @@ function ChatFir() {
         if (res.data.fir_content) {
           setMessages(msgs => [
             ...msgs.slice(0, -1),
-            { user: input, bot: botResponse, fir_content: res.data.fir_content }
+            { user: messageToSend, bot: botResponse, fir_content: res.data.fir_content }
           ]);
         } else if (Array.isArray(botResponse) && botResponse.length > 0) {
           setMessages(msgs => [
             ...msgs.slice(0, -1),
-            { user: input, bot: botResponse },
-            { bot: `Displayed ${botResponse.length} FIRs for: ${input}` } // Summary for history
+            { user: messageToSend, bot: botResponse },
+            { bot: `Displayed ${botResponse.length} FIRs for: ${messageToSend}` } // Summary for history
           ]);
           setChartData(botResponse);
         } else if (
@@ -88,13 +93,13 @@ function ChatFir() {
           const count = countMatch ? countMatch[1] : "";
           setMessages(msgs => [
             ...msgs.slice(0, -1),
-            { user: input, bot: botResponse },
-            { bot: `Counted ${count} FIRs for: ${input}` } // Summary for history
+            { user: messageToSend, bot: botResponse },
+            { bot: `Counted ${count} FIRs for: ${messageToSend}` } // Summary for history
           ]);
         } else {
           setMessages(msgs => [
             ...msgs.slice(0, -1),
-            { user: input, bot: botResponse }
+            { user: messageToSend, bot: botResponse }
           ]);
         }
       }
@@ -138,21 +143,21 @@ function ChatFir() {
               FIR Content Analysis Options
             </div>
             <div className="fir-options-list">
-              <div className="fir-option">
+              <div className="fir-option" onClick={() => handleFirOptionClick('1')}>
                 <div className="fir-option-number">1</div>
                 <div className="fir-option-content">
                   <div className="fir-option-title">Summarize the FIR</div>
                   <div className="fir-option-description">Create a concise summary of the case</div>
                 </div>
               </div>
-              <div className="fir-option">
+              <div className="fir-option" onClick={() => handleFirOptionClick('2')}>
                 <div className="fir-option-number">2</div>
                 <div className="fir-option-content">
                   <div className="fir-option-title">Analyze and suggest documents</div>
                   <div className="fir-option-description">Determine case type and suggest relevant reports</div>
                 </div>
               </div>
-              <div className="fir-option">
+              <div className="fir-option" onClick={() => handleFirOptionClick('3')}>
                 <div className="fir-option-number">3</div>
                 <div className="fir-option-content">
                   <div className="fir-option-title">Both</div>
