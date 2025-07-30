@@ -148,7 +148,20 @@ async def chat(request: Request):
         return {"answer": "Understood! How else can I help you with the FIR data?", "sql": "SELECT 'Acknowledged' as response"}
 
     # Check if this looks like FIR content (not a database query)
-    if len(user_message) > 100 and not any(keyword in user_message.lower() for keyword in ['show', 'how many', 'count', 'list', 'compare', 'find', 'search', 'filter', 'where', 'select']):
+    # Look for FIR content indicators
+    fir_indicators = [
+        'police station', 'ps-', 'dist.', 'district', 'fir', 'case', 'complaint',
+        'alleging', 'reported', 'incident', 'accused', 'victim', 'suspect',
+        'seized', 'recovered', 'arrested', 'detained', 'investigation',
+        'witness', 'evidence', 'confession', 'remand', 'magistrate'
+    ]
+    
+    # Check if the message contains FIR-related keywords and is long enough
+    has_fir_keywords = any(indicator in user_message.lower() for indicator in fir_indicators)
+    is_long_text = len(user_message) > 150
+    is_not_query = not any(keyword in user_message.lower() for keyword in ['show', 'how many', 'count', 'list', 'compare', 'find', 'search', 'filter', 'where', 'select', 'sql'])
+    
+    if has_fir_keywords and is_long_text and is_not_query:
         # This looks like FIR content - offer analysis options
         return {
             "answer": f"I see you've provided FIR content. What would you like me to do with this data?\n\n1. **Summarize the FIR** - Create a concise summary\n2. **Analyze and suggest documents** - Determine case type and suggest relevant reports\n3. **Both** - Summarize and analyze\n\nPlease respond with 1, 2, or 3.",
