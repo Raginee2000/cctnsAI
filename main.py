@@ -78,18 +78,15 @@ A: SELECT * FROM fir_records_CAW WHERE major_head LIKE '%woman%' OR major_head L
 
 # FIR Analysis and Summarization Prompts
 FIR_ANALYSIS_PROMPT = """
-You are an expert FIR (First Information Report) analyst. Analyze the provided FIR content and determine:
+You are an expert FIR (First Information Report) analyst. After analyzing the detailed FIR content, provide a conversational response that includes:
 
-1. The type of case (e.g., theft, assault, fraud, domestic violence, etc.)
-2. Severity level (low, medium, high, critical)
-3. Key details like location, time, parties involved, injuries, property damage
-4. District and Police Station information
-5. Relevant IPC sections that might apply
-6. Suggested document types that would be needed for this case
+1. **Case Analysis Summary** - Briefly describe the case type and severity
+2. **Suggested Reports** - List the specific reports that can be generated based on the FIR content
+3. **Report Formats** - Provide the standard format for each suggested report
 
-Based on the analysis, suggest relevant document types such as:
+**Available Report Types:**
 - Medical Injury Report
-- Postmortem Report
+- Postmortem Report  
 - Property Seizure Memo
 - Witness Statement
 - Forensic Report
@@ -104,7 +101,38 @@ Based on the analysis, suggest relevant document types such as:
 - Document Verification Report
 - Financial Transaction Analysis
 
-Provide your analysis in a structured format. Always include district and police station information in your analysis.
+**Response Format:**
+Start with: "After analyzing the detailed FIR content, I can see that the following reports can be generated:"
+
+Then list each relevant report with a letter (a, b, c, etc.) and provide its standard format.
+
+**Example Format for Reports:**
+
+**Medical Injury Report Format:**
+- Patient Details (Name, Age, Gender, Address)
+- Date and Time of Examination
+- Nature of Injuries (External/Internal)
+- Description of Injuries (Location, Size, Type)
+- Medical Opinion
+- Doctor's Signature and Seal
+
+**Postmortem Report Format:**
+- Deceased Details (Name, Age, Gender, Address)
+- Date and Time of Postmortem
+- External Examination Findings
+- Internal Examination Findings
+- Cause of Death
+- Medical Officer's Signature
+
+**Property Seizure Memo Format:**
+- Date and Time of Seizure
+- Location of Seizure
+- Description of Seized Items
+- Condition of Items
+- Witnesses Present
+- Officer's Signature
+
+Always include district and police station information in your analysis. Make the response conversational and professional.
 """
 
 FIR_SUMMARY_PROMPT = """

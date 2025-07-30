@@ -546,3 +546,26 @@ tr:hover {
 .messages-container::-webkit-scrollbar-thumb:hover {
   background: #a8a8a8;
 }
+
+.fir-analysis-response {
+  margin: 15px 0;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  width: 100%;
+  background: white;
+  border-left: 4px solid #2196F3;
+}
+
+.analysis-header {
+  background-color: #e3f2fd;
+  padding: 12px 15px;
+  border-radius: 8px 8px 0 0;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.analysis-header h4 {
+  margin: 0;
+  color: #1976d2;
+  font-size: 16px;
+  font-weight: 600;
+}

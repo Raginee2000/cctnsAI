@@ -261,6 +261,20 @@ function ChatFir() {
         );
       }
       
+      // Check if this is a FIR analysis response
+      if (msg.includes("**FIR Analysis and Document Suggestions:**") || msg.includes("After analyzing the detailed FIR content")) {
+        return (
+          <div className="fir-analysis-response">
+            <div className="analysis-header">
+              <h4>FIR Analysis & Document Suggestions</h4>
+            </div>
+            <div style={{ padding: '15px', whiteSpace: 'pre-wrap', lineHeight: '1.6' }}>
+              {msg}
+            </div>
+          </div>
+        );
+      }
+      
       return msg;
     } else if (Array.isArray(msg) && msg.length > 0) {
       return (
