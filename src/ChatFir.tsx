@@ -10,6 +10,7 @@ type Message = {
   user?: string;
   bot?: any; // can be string or array
   fir_content?: string; // Add this for FIR content storage
+  suggested_reports?: string[]; // Add this for suggested reports
 };
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#A28CFF', '#FF6F91', '#6FCF97', '#F2994A'];
@@ -78,9 +79,45 @@ function ChatFir() {
   const [chartType, setChartType] = useState<string | null>(null);
   const [chartData, setChartData] = useState<any[]>([]);
   const [groupField, setGroupField] = useState("major_head");
+  const [showReportForm, setShowReportForm] = useState(false);
+  const [currentReportForm, setCurrentReportForm] = useState<any>(null);
+  const [formData, setFormData] = useState<any>({});
 
   const handleFirOptionClick = (option: string) => {
     sendMessage(option);
+  };
+
+  const handleReportClick = async (reportType: string) => {
+    try {
+      const response = await axios.get(`http://localhost:8000/report-form/${encodeURIComponent(reportType)}`);
+      if (response.data.error) {
+        alert('Report form not found');
+        return;
+      }
+      setCurrentReportForm(response.data);
+      setShowReportForm(true);
+      setFormData({});
+    } catch (error) {
+      console.error('Error fetching report form:', error);
+      alert('Error loading report form');
+    }
+  };
+
+  const handleFormSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Here you can handle form submission (save to database, generate PDF, etc.)
+    console.log('Form data:', formData);
+    alert('Report form submitted successfully!');
+    setShowReportForm(false);
+    setCurrentReportForm(null);
+    setFormData({});
+  };
+
+  const handleFormInputChange = (fieldName: string, value: any) => {
+    setFormData(prev => ({
+      ...prev,
+      [fieldName]: value
+    }));
   };
 
   const buildHistory = () => {
@@ -125,7 +162,12 @@ function ChatFir() {
         if (res.data.fir_content) {
           setMessages(msgs => [
             ...msgs.slice(0, -1),
-            { user: messageToSend, bot: botResponse, fir_content: res.data.fir_content }
+            { 
+              user: messageToSend, 
+              bot: botResponse, 
+              fir_content: res.data.fir_content,
+              suggested_reports: res.data.suggested_reports || []
+            }
           ]);
         } else if (Array.isArray(botResponse) && botResponse.length > 0) {
           setMessages(msgs => [
@@ -262,7 +304,7 @@ function ChatFir() {
       }
       
       // Check if this is a FIR analysis response
-      if (msg.includes("**FIR Analysis and Document Suggestions:**") || msg.includes("After analyzing the detailed FIR content")) {
+      if (msg.includes("**Suggested Reports for this FIR:**") || msg.includes("**FIR Analysis and Document Suggestions:**") || msg.includes("After analyzing the detailed FIR content")) {
         return (
           <div className="fir-analysis-response">
             <div className="analysis-header">
@@ -404,6 +446,111 @@ function ChatFir() {
     );
   };
 
+  const renderReportLinks = (suggestedReports: string[]) => {
+    if (!suggestedReports || suggestedReports.length === 0) return null;
+    
+    const letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'];
+    
+    return (
+      <div className="report-links-container">
+        <div className="report-links-header">
+          <h4>Click on a report to generate:</h4>
+        </div>
+        <div className="report-links-list">
+          {suggestedReports.map((report, index) => (
+            <button
+              key={index}
+              className="report-link-button"
+              onClick={() => handleReportClick(report)}
+            >
+              {letters[index]}) {report}
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  const renderReportForm = () => {
+    if (!showReportForm || !currentReportForm) return null;
+
+    return (
+      <div className="modal-overlay">
+        <div className="modal-content">
+          <div className="modal-header">
+            <h3>{currentReportForm.title}</h3>
+            <button 
+              className="modal-close"
+              onClick={() => {
+                setShowReportForm(false);
+                setCurrentReportForm(null);
+                setFormData({});
+              }}
+            >
+              ×
+            </button>
+          </div>
+          <form onSubmit={handleFormSubmit} className="report-form">
+            {currentReportForm.fields.map((field: any, index: number) => (
+              <div key={index} className="form-field">
+                <label htmlFor={field.name}>
+                  {field.label}
+                  {field.required && <span className="required">*</span>}
+                </label>
+                {field.type === 'textarea' ? (
+                  <textarea
+                    id={field.name}
+                    name={field.name}
+                    value={formData[field.name] || ''}
+                    onChange={(e) => handleFormInputChange(field.name, e.target.value)}
+                    required={field.required}
+                    rows={4}
+                  />
+                ) : field.type === 'select' ? (
+                  <select
+                    id={field.name}
+                    name={field.name}
+                    value={formData[field.name] || ''}
+                    onChange={(e) => handleFormInputChange(field.name, e.target.value)}
+                    required={field.required}
+                  >
+                    <option value="">Select {field.label}</option>
+                    {field.options.map((option: string) => (
+                      <option key={option} value={option}>{option}</option>
+                    ))}
+                  </select>
+                ) : (
+                  <input
+                    type={field.type}
+                    id={field.name}
+                    name={field.name}
+                    value={formData[field.name] || ''}
+                    onChange={(e) => handleFormInputChange(field.name, e.target.value)}
+                    required={field.required}
+                  />
+                )}
+              </div>
+            ))}
+            <div className="form-actions">
+              <button type="submit" className="submit-btn">Generate Report</button>
+              <button 
+                type="button" 
+                className="cancel-btn"
+                onClick={() => {
+                  setShowReportForm(false);
+                  setCurrentReportForm(null);
+                  setFormData({});
+                }}
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="chat-container">
       <div className="chat-header">
@@ -424,9 +571,11 @@ function ChatFir() {
                 <b>Bot:</b> {renderBotMessage(msg.bot)}
               </div>
             )}
+            {msg.suggested_reports && renderReportLinks(msg.suggested_reports)}
           </div>
         ))}
         {renderChart()}
+        {renderReportForm()}
       </div>
       
       <div className="input-area">

@@ -157,6 +157,82 @@ CRITICAL: You MUST extract and include the district and police station informati
 If district or police station information is not explicitly mentioned, indicate "Not specified" but always include this field.
 """
 
+# Report form templates
+REPORT_FORMS = {
+    "Medical Injury Report": {
+        "title": "Medical Injury Report",
+        "fields": [
+            {"name": "patient_name", "label": "Patient Name", "type": "text", "required": True},
+            {"name": "patient_age", "label": "Age", "type": "number", "required": True},
+            {"name": "patient_gender", "label": "Gender", "type": "select", "options": ["Male", "Female", "Other"], "required": True},
+            {"name": "patient_address", "label": "Address", "type": "textarea", "required": True},
+            {"name": "examination_date", "label": "Date of Examination", "type": "datetime-local", "required": True},
+            {"name": "injury_nature", "label": "Nature of Injuries", "type": "select", "options": ["External", "Internal", "Both"], "required": True},
+            {"name": "injury_description", "label": "Description of Injuries", "type": "textarea", "required": True},
+            {"name": "medical_opinion", "label": "Medical Opinion", "type": "textarea", "required": True},
+            {"name": "doctor_name", "label": "Doctor's Name", "type": "text", "required": True},
+            {"name": "hospital", "label": "Hospital/Clinic", "type": "text", "required": True}
+        ]
+    },
+    "Postmortem Report": {
+        "title": "Postmortem Report",
+        "fields": [
+            {"name": "deceased_name", "label": "Deceased Name", "type": "text", "required": True},
+            {"name": "deceased_age", "label": "Age", "type": "number", "required": True},
+            {"name": "deceased_gender", "label": "Gender", "type": "select", "options": ["Male", "Female", "Other"], "required": True},
+            {"name": "deceased_address", "label": "Address", "type": "textarea", "required": True},
+            {"name": "postmortem_date", "label": "Date of Postmortem", "type": "datetime-local", "required": True},
+            {"name": "external_findings", "label": "External Examination Findings", "type": "textarea", "required": True},
+            {"name": "internal_findings", "label": "Internal Examination Findings", "type": "textarea", "required": True},
+            {"name": "cause_of_death", "label": "Cause of Death", "type": "textarea", "required": True},
+            {"name": "medical_officer", "label": "Medical Officer's Name", "type": "text", "required": True}
+        ]
+    },
+    "Property Seizure Memo": {
+        "title": "Property Seizure Memo",
+        "fields": [
+            {"name": "seizure_date", "label": "Date and Time of Seizure", "type": "datetime-local", "required": True},
+            {"name": "seizure_location", "label": "Location of Seizure", "type": "text", "required": True},
+            {"name": "seized_items", "label": "Description of Seized Items", "type": "textarea", "required": True},
+            {"name": "item_condition", "label": "Condition of Items", "type": "textarea", "required": True},
+            {"name": "witnesses", "label": "Witnesses Present", "type": "textarea", "required": True},
+            {"name": "officer_name", "label": "Officer's Name", "type": "text", "required": True},
+            {"name": "officer_rank", "label": "Officer's Rank", "type": "text", "required": True}
+        ]
+    },
+    "Witness Statement": {
+        "title": "Witness Statement",
+        "fields": [
+            {"name": "witness_name", "label": "Witness Name", "type": "text", "required": True},
+            {"name": "witness_age", "label": "Age", "type": "number", "required": True},
+            {"name": "witness_address", "label": "Address", "type": "textarea", "required": True},
+            {"name": "statement_date", "label": "Date of Statement", "type": "datetime-local", "required": True},
+            {"name": "event_description", "label": "Description of Events", "type": "textarea", "required": True},
+            {"name": "witness_signature", "label": "Witness Signature", "type": "text", "required": True}
+        ]
+    },
+    "Vehicle Inspection Report": {
+        "title": "Vehicle Inspection Report",
+        "fields": [
+            {"name": "vehicle_number", "label": "Vehicle Registration Number", "type": "text", "required": True},
+            {"name": "vehicle_type", "label": "Vehicle Type", "type": "text", "required": True},
+            {"name": "inspection_date", "label": "Date of Inspection", "type": "datetime-local", "required": True},
+            {"name": "inspection_location", "label": "Location of Inspection", "type": "text", "required": True},
+            {"name": "inspection_findings", "label": "Inspection Findings", "type": "textarea", "required": True},
+            {"name": "inspector_name", "label": "Inspector's Name", "type": "text", "required": True},
+            {"name": "inspector_rank", "label": "Inspector's Rank", "type": "text", "required": True}
+        ]
+    }
+}
+
+@app.get("/report-form/{report_type}")
+async def get_report_form(report_type: str):
+    """Get the form structure for a specific report type"""
+    if report_type in REPORT_FORMS:
+        return REPORT_FORMS[report_type]
+    else:
+        return {"error": "Report type not found"}
+
 @app.post("/chat")
 async def chat(request: Request):
     data = await request.json()
@@ -245,7 +321,24 @@ async def chat(request: Request):
                     temperature=0.3,
                 )
                 analysis = analysis_response.choices[0].message.content.strip()
-                return {"answer": f"**FIR Analysis and Document Suggestions:**\n\n{analysis}", "sql": None}
+                
+                # Extract suggested reports from the analysis
+                import re
+                suggested_reports = []
+                lines = analysis.split('\n')
+                for line in lines:
+                    if line.strip().startswith(('a)', 'b)', 'c)', 'd)', 'e)', 'f)', 'g)', 'h)', 'i)', 'j)')):
+                        # Extract report type from lines like "a) Medical Injury Report"
+                        match = re.search(r'[a-j]\)\s*\*\*(.+?)\*\*', line)
+                        if match:
+                            suggested_reports.append(match.group(1).strip())
+                
+                return {
+                    "answer": f"**Suggested Reports for this FIR:**\n\n{analysis}", 
+                    "suggested_reports": suggested_reports,
+                    "fir_content": fir_content,
+                    "sql": None
+                }
             
             elif choice == '3':
                 # Both summarize and analyze
