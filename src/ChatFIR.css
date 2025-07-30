@@ -61,29 +61,30 @@ html, body, #root {
 .user-message {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
-  padding: 15px 20px;
-  border-radius: 20px 20px 4px 20px;
-  max-width: 70%;
-  min-width: 200px;
+  padding: 12px 16px;
+  border-radius: 18px 18px 4px 18px;
+  max-width: 60%;
+  min-width: 150px;
   word-break: break-word;
-  box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
   font-weight: 500;
-  font-size: 15px;
+  font-size: 14px;
   text-align: right;
+  line-height: 1.4;
 }
 
 .bot-message {
   background: white;
   color: #333;
-  padding: 15px 20px;
-  border-radius: 20px 20px 20px 4px;
-  max-width: 80%;
-  min-width: 200px;
+  padding: 12px 16px;
+  border-radius: 18px 18px 18px 4px;
+  max-width: 75%;
+  min-width: 150px;
   word-break: break-word;
-  box-shadow: 0 3px 10px rgba(0,0,0,0.1);
-  border-left: 4px solid #667eea;
-  font-size: 15px;
-  line-height: 1.5;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  border-left: 3px solid #667eea;
+  font-size: 14px;
+  line-height: 1.4;
   text-align: left;
 }
 
@@ -95,91 +96,92 @@ html, body, #root {
 /* FIR Analysis Options Styling */
 .fir-analysis-options {
   background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-  border: 2px solid #667eea;
-  border-radius: 12px;
-  padding: 20px;
-  margin: 10px 0;
+  border: 1px solid #667eea;
+  border-radius: 8px;
+  padding: 12px;
+  margin: 8px 0;
   width: 100%;
 }
 
 .fir-analysis-title {
-  font-size: 18px;
+  font-size: 14px;
   font-weight: 600;
   color: #495057;
-  margin-bottom: 20px;
+  margin-bottom: 12px;
   text-align: center;
 }
 
 .fir-options-list {
   display: flex;
   flex-direction: row;
-  gap: 15px;
+  gap: 8px;
   justify-content: center;
   flex-wrap: wrap;
 }
 
 .fir-option {
   background: white;
-  border: 2px solid #e9ecef;
-  border-radius: 12px;
-  padding: 20px;
+  border: 1px solid #e9ecef;
+  border-radius: 6px;
+  padding: 8px 12px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
   user-select: none;
-  min-width: 180px;
+  min-width: 120px;
   flex: 1;
-  max-width: 250px;
+  max-width: 180px;
   text-align: center;
 }
 
 .fir-option:hover {
   border-color: #667eea;
   background: #f8f9ff;
-  transform: translateY(-3px);
-  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.2);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(102, 126, 234, 0.15);
 }
 
 .fir-option:active {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(102, 126, 234, 0.1);
 }
 
 .fir-option-number {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
-  width: 40px;
-  height: 40px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 600;
-  font-size: 16px;
-  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+  font-size: 12px;
+  box-shadow: 0 1px 3px rgba(102, 126, 234, 0.3);
 }
 
 .fir-option-content {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 2px;
 }
 
 .fir-option-title {
   font-weight: 600;
   color: #495057;
-  font-size: 16px;
-  margin-bottom: 4px;
+  font-size: 12px;
+  margin-bottom: 2px;
+  line-height: 1.2;
 }
 
 .fir-option-description {
   color: #6c757d;
-  font-size: 13px;
-  line-height: 1.4;
+  font-size: 10px;
+  line-height: 1.2;
 }
 
 .input-area {
@@ -392,36 +394,37 @@ tr:hover {
 
 /* FIR Summary Table Styling */
 .fir-summary-table {
-  margin: 20px 0;
+  margin: 15px 0;
   background: white;
-  border-radius: 12px;
+  border-radius: 8px;
   overflow: hidden;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  width: 100%;
 }
 
 .fir-summary-table table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 14px;
+  font-size: 12px;
 }
 
 .fir-summary-table th {
   background: #f8f9fa;
-  padding: 15px 20px;
+  padding: 10px 12px;
   text-align: left;
   font-weight: 600;
   color: #495057;
   border-bottom: 1px solid #dee2e6;
-  font-size: 14px;
-  width: 30%;
+  font-size: 12px;
+  width: 25%;
   vertical-align: top;
 }
 
 .fir-summary-table td {
-  padding: 15px 20px;
+  padding: 10px 12px;
   border-bottom: 1px solid #e9ecef;
-  font-size: 14px;
-  line-height: 1.5;
+  font-size: 12px;
+  line-height: 1.4;
   word-wrap: break-word;
   white-space: normal;
 }
@@ -443,8 +446,8 @@ tr:hover {
   
   .user-message, .bot-message {
     max-width: 85%;
-    min-width: 150px;
-    font-size: 14px;
+    min-width: 120px;
+    font-size: 13px;
   }
   
   .input-area {
@@ -476,27 +479,41 @@ tr:hover {
   
   .fir-options-list {
     flex-direction: column;
-    gap: 10px;
+    gap: 6px;
   }
   
   .fir-option {
-    padding: 15px;
+    padding: 8px 10px;
     min-width: auto;
     max-width: none;
   }
   
+  .fir-option-number {
+    width: 20px;
+    height: 20px;
+    font-size: 10px;
+  }
+  
+  .fir-option-title {
+    font-size: 11px;
+  }
+  
+  .fir-option-description {
+    font-size: 9px;
+  }
+  
   .table-wrapper {
-    margin: 10px 0;
+    margin: 8px 0;
   }
   
   table {
-    min-width: 400px;
-    font-size: 11px;
+    min-width: 350px;
+    font-size: 10px;
   }
   
   th, td {
-    padding: 8px 6px;
-    font-size: 11px;
+    padding: 6px 4px;
+    font-size: 10px;
   }
 }
 

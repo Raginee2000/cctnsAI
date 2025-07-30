@@ -172,22 +172,22 @@ function ChatFir() {
               <div className="fir-option" onClick={() => handleFirOptionClick('1')}>
                 <div className="fir-option-number">1</div>
                 <div className="fir-option-content">
-                  <div className="fir-option-title">Summarize the FIR</div>
-                  <div className="fir-option-description">Create a concise summary of the case</div>
+                  <div className="fir-option-title">Summarize</div>
+                  <div className="fir-option-description">Create summary</div>
                 </div>
               </div>
               <div className="fir-option" onClick={() => handleFirOptionClick('2')}>
                 <div className="fir-option-number">2</div>
                 <div className="fir-option-content">
-                  <div className="fir-option-title">Analyze and suggest documents</div>
-                  <div className="fir-option-description">Determine case type and suggest relevant reports</div>
+                  <div className="fir-option-title">Analyze</div>
+                  <div className="fir-option-description">Suggest documents</div>
                 </div>
               </div>
               <div className="fir-option" onClick={() => handleFirOptionClick('3')}>
                 <div className="fir-option-number">3</div>
                 <div className="fir-option-content">
                   <div className="fir-option-title">Both</div>
-                  <div className="fir-option-description">Summarize and analyze the FIR content</div>
+                  <div className="fir-option-description">Summary & analysis</div>
                 </div>
               </div>
             </div>
