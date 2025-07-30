@@ -83,8 +83,9 @@ You are an expert FIR (First Information Report) analyst. Analyze the provided F
 1. The type of case (e.g., theft, assault, fraud, domestic violence, etc.)
 2. Severity level (low, medium, high, critical)
 3. Key details like location, time, parties involved, injuries, property damage
-4. Relevant IPC sections that might apply
-5. Suggested document types that would be needed for this case
+4. District and Police Station information
+5. Relevant IPC sections that might apply
+6. Suggested document types that would be needed for this case
 
 Based on the analysis, suggest relevant document types such as:
 - Medical Injury Report
@@ -103,7 +104,7 @@ Based on the analysis, suggest relevant document types such as:
 - Document Verification Report
 - Financial Transaction Analysis
 
-Provide your analysis in a structured format.
+Provide your analysis in a structured format. Always include district and police station information in your analysis.
 """
 
 FIR_SUMMARY_PROMPT = """
@@ -113,11 +114,12 @@ You are an expert at summarizing FIR (First Information Report) content. Create 
 2. Key Facts and Timeline
 3. Parties Involved
 4. Location and Jurisdiction
-5. Evidence Mentioned
-6. Current Status
-7. Recommended Actions
+5. District and Police Station
+6. Evidence Mentioned
+7. Current Status
+8. Recommended Actions
 
-Make the summary clear, factual, and suitable for police records.
+Make the summary clear, factual, and suitable for police records. Always extract and mention the district and police station information from the FIR content.
 """
 
 @app.post("/chat")
