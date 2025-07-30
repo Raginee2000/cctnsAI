@@ -29,17 +29,35 @@ function parseFirSummary(summaryText: string) {
   
   lines.forEach(line => {
     const trimmedLine = line.trim();
+    
+    // Try different patterns to match summary lines
+    let match = null;
+    
+    // Pattern 1: "1. Case Type and Category: Robbery and Assault"
     if (trimmedLine.match(/^\d+\./)) {
-      // Extract category and details from lines like "1. Case Type and Category: Robbery and Assault"
-      const match = trimmedLine.match(/^\d+\.\s*(.+?):\s*(.+)/);
-      if (match) {
-        summaryData.push({
-          category: match[1].trim(),
-          details: match[2].trim()
-        });
-      }
+      match = trimmedLine.match(/^\d+\.\s*(.+?):\s*(.+)/);
+    }
+    // Pattern 2: "Case Type and Category: Robbery and Assault"
+    else if (trimmedLine.includes(':')) {
+      match = trimmedLine.match(/^(.+?):\s*(.+)/);
+    }
+    // Pattern 3: "Case Type and Category - Robbery and Assault"
+    else if (trimmedLine.includes(' - ')) {
+      match = trimmedLine.match(/^(.+?)\s*-\s*(.+)/);
+    }
+    
+    if (match) {
+      summaryData.push({
+        category: match[1].trim(),
+        details: match[2].trim()
+      });
     }
   });
+  
+  // If no structured data found, return the raw text
+  if (summaryData.length === 0) {
+    return [{ category: "Summary", details: summaryText }];
+  }
   
   return summaryData;
 }
@@ -199,6 +217,21 @@ function ChatFir() {
       if (msg.includes("**FIR Summary:**")) {
         const summaryContent = msg.replace("**FIR Summary:**", "").trim();
         const summaryData = parseFirSummary(summaryContent);
+        
+        // Debug: If no structured data found, show the raw content
+        if (summaryData.length === 0 || (summaryData.length === 1 && summaryData[0].category === "Summary")) {
+          return (
+            <div className="fir-summary-table">
+              <div className="table-header">
+                <h4>FIR Summary</h4>
+              </div>
+              <div style={{ padding: '15px', whiteSpace: 'pre-wrap' }}>
+                {summaryContent}
+              </div>
+            </div>
+          );
+        }
+        
         return (
           <div className="fir-summary-table">
             <div className="table-header">

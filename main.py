@@ -195,6 +195,7 @@ async def chat(request: Request):
                     temperature=0.3,
                 )
                 summary = summary_response.choices[0].message.content.strip()
+                print(f"DEBUG: Summary response: {summary}")  # Debug print
                 return {"answer": f"**FIR Summary:**\n\n{summary}", "sql": None}
             
             elif choice == '2':
