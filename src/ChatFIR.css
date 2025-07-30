@@ -588,21 +588,26 @@ tr:hover {
 
 .report-links-list {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-start;
 }
 
 .report-link-button {
   background: #007bff;
   color: white;
   border: none;
-  padding: 10px 15px;
+  padding: 8px 12px;
   border-radius: 6px;
   cursor: pointer;
-  font-size: 14px;
-  text-align: left;
+  font-size: 12px;
+  text-align: center;
   transition: background-color 0.2s;
   font-weight: 500;
+  white-space: nowrap;
+  min-width: 120px;
+  max-width: 200px;
 }
 
 .report-link-button:hover {
@@ -784,5 +789,19 @@ tr:hover {
   .submit-btn,
   .cancel-btn {
     width: 100%;
+  }
+  
+  .report-links-list {
+    flex-direction: column;
+    gap: 6px;
+  }
+  
+  .report-link-button {
+    width: 100%;
+    margin-bottom: 4px;
+    font-size: 11px;
+    padding: 6px 8px;
+    min-width: auto;
+    max-width: none;
   }
 }

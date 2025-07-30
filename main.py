@@ -356,6 +356,20 @@ async def chat(request: Request):
                             if report_name and len(report_name) > 3:
                                 suggested_reports.append(report_name)
                 
+                # Pattern 4: Look for "a. Vehicle Inspection Report Format:" pattern
+                if not suggested_reports:
+                    format_pattern = re.findall(r'[a-j]\.\s*([^*]+?)\s+Report\s+Format', analysis)
+                    for match in format_pattern:
+                        if match.strip() and len(match.strip()) > 3:
+                            suggested_reports.append(f"{match.strip()} Report")
+                
+                # Pattern 5: Look for "**a. Vehicle Inspection Report Format:**" pattern
+                if not suggested_reports:
+                    format_pattern = re.findall(r'\*\*[a-j]\.\s*([^*]+?)\s+Report\s+Format\*\*', analysis)
+                    for match in format_pattern:
+                        if match.strip() and len(match.strip()) > 3:
+                            suggested_reports.append(f"{match.strip()} Report")
+                
                 # If no reports found, try to extract from the text
                 if not suggested_reports:
                     # Look for common report types in the entire text
@@ -370,6 +384,9 @@ async def chat(request: Request):
                     for report in common_reports:
                         if report.lower() in analysis.lower():
                             suggested_reports.append(report)
+                
+                # Remove duplicates and clean up
+                suggested_reports = list(dict.fromkeys([report.strip() for report in suggested_reports if report.strip() and len(report.strip()) > 3]))
                 
                 print(f"DEBUG: Extracted reports: {suggested_reports}")
                 
