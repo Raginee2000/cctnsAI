@@ -222,16 +222,139 @@ REPORT_FORMS = {
             {"name": "inspector_name", "label": "Inspector's Name", "type": "text", "required": True},
             {"name": "inspector_rank", "label": "Inspector's Rank", "type": "text", "required": True}
         ]
+    },
+    "CCTV Footage Analysis": {
+        "title": "CCTV Footage Analysis",
+        "fields": [
+            {"name": "incident_date", "label": "Date and Time of Incident", "type": "datetime-local", "required": True},
+            {"name": "camera_location", "label": "Location of CCTV Camera", "type": "text", "required": True},
+            {"name": "events_captured", "label": "Description of Events Captured", "type": "textarea", "required": True},
+            {"name": "perpetrators_identified", "label": "Identification of Perpetrators", "type": "textarea", "required": True},
+            {"name": "chain_of_custody", "label": "Chain of Custody of Footage", "type": "textarea", "required": True},
+            {"name": "analyst_name", "label": "Analyst's Name", "type": "text", "required": True},
+            {"name": "analyst_signature", "label": "Analyst's Signature", "type": "text", "required": True}
+        ]
+    },
+    "Forensic Report": {
+        "title": "Forensic Report",
+        "fields": [
+            {"name": "case_number", "label": "Case Number", "type": "text", "required": True},
+            {"name": "evidence_type", "label": "Type of Evidence", "type": "text", "required": True},
+            {"name": "collection_date", "label": "Date of Collection", "type": "datetime-local", "required": True},
+            {"name": "analysis_method", "label": "Method of Analysis", "type": "textarea", "required": True},
+            {"name": "findings", "label": "Forensic Findings", "type": "textarea", "required": True},
+            {"name": "conclusion", "label": "Conclusion", "type": "textarea", "required": True},
+            {"name": "forensic_expert", "label": "Forensic Expert Name", "type": "text", "required": True}
+        ]
+    },
+    "Digital Evidence Report": {
+        "title": "Digital Evidence Report",
+        "fields": [
+            {"name": "device_type", "label": "Device Type", "type": "text", "required": True},
+            {"name": "device_serial", "label": "Device Serial Number", "type": "text", "required": True},
+            {"name": "seizure_date", "label": "Date of Seizure", "type": "datetime-local", "required": True},
+            {"name": "evidence_description", "label": "Description of Digital Evidence", "type": "textarea", "required": True},
+            {"name": "analysis_results", "label": "Analysis Results", "type": "textarea", "required": True},
+            {"name": "expert_name", "label": "Digital Forensics Expert", "type": "text", "required": True}
+        ]
+    },
+    "Chemical Analysis Report": {
+        "title": "Chemical Analysis Report",
+        "fields": [
+            {"name": "sample_description", "label": "Sample Description", "type": "text", "required": True},
+            {"name": "analysis_date", "label": "Date of Analysis", "type": "datetime-local", "required": True},
+            {"name": "test_methods", "label": "Test Methods Used", "type": "textarea", "required": True},
+            {"name": "chemical_findings", "label": "Chemical Analysis Findings", "type": "textarea", "required": True},
+            {"name": "chemist_name", "label": "Chemist's Name", "type": "text", "required": True}
+        ]
+    },
+    "Ballistic Report": {
+        "title": "Ballistic Report",
+        "fields": [
+            {"name": "firearm_type", "label": "Firearm Type", "type": "text", "required": True},
+            {"name": "cartridge_details", "label": "Cartridge Details", "type": "text", "required": True},
+            {"name": "ballistic_analysis", "label": "Ballistic Analysis", "type": "textarea", "required": True},
+            {"name": "expert_name", "label": "Ballistics Expert Name", "type": "text", "required": True}
+        ]
+    },
+    "DNA Analysis Report": {
+        "title": "DNA Analysis Report",
+        "fields": [
+            {"name": "sample_type", "label": "Sample Type", "type": "text", "required": True},
+            {"name": "collection_date", "label": "Date of Collection", "type": "datetime-local", "required": True},
+            {"name": "analysis_date", "label": "Date of Analysis", "type": "datetime-local", "required": True},
+            {"name": "dna_findings", "label": "DNA Analysis Findings", "type": "textarea", "required": True},
+            {"name": "geneticist_name", "label": "Geneticist's Name", "type": "text", "required": True}
+        ]
+    },
+    "Fingerprint Analysis": {
+        "title": "Fingerprint Analysis",
+        "fields": [
+            {"name": "fingerprint_type", "label": "Fingerprint Type", "type": "select", "options": ["Latent", "Patent", "Plastic"], "required": True},
+            {"name": "surface_type", "label": "Surface Type", "type": "text", "required": True},
+            {"name": "analysis_date", "label": "Date of Analysis", "type": "datetime-local", "required": True},
+            {"name": "fingerprint_findings", "label": "Fingerprint Analysis Findings", "type": "textarea", "required": True},
+            {"name": "expert_name", "label": "Fingerprint Expert Name", "type": "text", "required": True}
+        ]
+    },
+    "Document Verification Report": {
+        "title": "Document Verification Report",
+        "fields": [
+            {"name": "document_type", "label": "Document Type", "type": "text", "required": True},
+            {"name": "verification_date", "label": "Date of Verification", "type": "datetime-local", "required": True},
+            {"name": "verification_method", "label": "Method of Verification", "type": "textarea", "required": True},
+            {"name": "verification_findings", "label": "Verification Findings", "type": "textarea", "required": True},
+            {"name": "verifier_name", "label": "Verifier's Name", "type": "text", "required": True}
+        ]
+    },
+    "Financial Transaction Analysis": {
+        "title": "Financial Transaction Analysis",
+        "fields": [
+            {"name": "account_holder", "label": "Account Holder Name", "type": "text", "required": True},
+            {"name": "account_number", "label": "Account Number", "type": "text", "required": True},
+            {"name": "analysis_period", "label": "Analysis Period", "type": "text", "required": True},
+            {"name": "suspicious_transactions", "label": "Suspicious Transactions", "type": "textarea", "required": True},
+            {"name": "analysis_findings", "label": "Analysis Findings", "type": "textarea", "required": True},
+            {"name": "analyst_name", "label": "Financial Analyst Name", "type": "text", "required": True}
+        ]
     }
 }
 
 @app.get("/report-form/{report_type}")
 async def get_report_form(report_type: str):
     """Get the form structure for a specific report type"""
+    # Try exact match first
     if report_type in REPORT_FORMS:
         return REPORT_FORMS[report_type]
-    else:
-        return {"error": "Report type not found"}
+    
+    # Try partial matches for common variations
+    partial_matches = {
+        "vehicle": "Vehicle Inspection Report",
+        "witness": "Witness Statement", 
+        "cctv": "CCTV Footage Analysis",
+        "medical": "Medical Injury Report",
+        "injury": "Medical Injury Report",
+        "postmortem": "Postmortem Report",
+        "property": "Property Seizure Memo",
+        "seizure": "Property Seizure Memo",
+        "forensic": "Forensic Report",
+        "digital": "Digital Evidence Report",
+        "chemical": "Chemical Analysis Report",
+        "ballistic": "Ballistic Report",
+        "dna": "DNA Analysis Report",
+        "fingerprint": "Fingerprint Analysis",
+        "document": "Document Verification Report",
+        "financial": "Financial Transaction Analysis"
+    }
+    
+    # Check if any partial match works
+    for keyword, full_report_name in partial_matches.items():
+        if keyword.lower() in report_type.lower():
+            if full_report_name in REPORT_FORMS:
+                return REPORT_FORMS[full_report_name]
+    
+    # If still not found, return error
+    return {"error": f"Report type '{report_type}' not found"}
 
 @app.post("/chat")
 async def chat(request: Request):
@@ -369,6 +492,70 @@ async def chat(request: Request):
                     for match in format_pattern:
                         if match.strip() and len(match.strip()) > 3:
                             suggested_reports.append(f"{match.strip()} Report")
+                
+                # Pattern 6: Look for specific report types in the text
+                if not suggested_reports:
+                    # Define the exact report types we support
+                    supported_reports = [
+                        "Medical Injury Report", "Postmortem Report", "Property Seizure Memo",
+                        "Witness Statement", "Forensic Report", "Vehicle Inspection Report",
+                        "CCTV Footage Analysis", "Digital Evidence Report", "Chemical Analysis Report",
+                        "Ballistic Report", "DNA Analysis Report", "Fingerprint Analysis",
+                        "Document Verification Report", "Financial Transaction Analysis"
+                    ]
+                    
+                    # Check which reports are mentioned in the analysis
+                    for report in supported_reports:
+                        if report.lower() in analysis.lower():
+                            suggested_reports.append(report)
+                
+                # Pattern 7: Look for partial matches and map them to full report names
+                if not suggested_reports:
+                    partial_matches = {
+                        "vehicle": "Vehicle Inspection Report",
+                        "witness": "Witness Statement", 
+                        "cctv": "CCTV Footage Analysis",
+                        "medical": "Medical Injury Report",
+                        "injury": "Medical Injury Report",
+                        "postmortem": "Postmortem Report",
+                        "property": "Property Seizure Memo",
+                        "seizure": "Property Seizure Memo",
+                        "forensic": "Forensic Report",
+                        "digital": "Digital Evidence Report",
+                        "chemical": "Chemical Analysis Report",
+                        "ballistic": "Ballistic Report",
+                        "dna": "DNA Analysis Report",
+                        "fingerprint": "Fingerprint Analysis",
+                        "document": "Document Verification Report",
+                        "financial": "Financial Transaction Analysis"
+                    }
+                    
+                    analysis_lower = analysis.lower()
+                    for keyword, report_name in partial_matches.items():
+                        if keyword in analysis_lower:
+                            suggested_reports.append(report_name)
+                
+                # Pattern 8: Look for specific format patterns from the AI response
+                if not suggested_reports:
+                    # Look for patterns like "**a. Vehicle Inspection Report Format:**"
+                    format_patterns = [
+                        r'\*\*[a-j]\.\s*([^*]+?)\s+Report\s+Format\*\*',
+                        r'[a-j]\.\s*([^*]+?)\s+Report\s+Format',
+                        r'\*\*([^*]+?)\s+Report\s+Format\*\*',
+                        r'([^*]+?)\s+Report\s+Format'
+                    ]
+                    
+                    for pattern in format_patterns:
+                        matches = re.findall(pattern, analysis, re.IGNORECASE)
+                        for match in matches:
+                            if match.strip() and len(match.strip()) > 3:
+                                # Clean up the match and add "Report" if not present
+                                clean_match = match.strip()
+                                if not clean_match.lower().endswith('report'):
+                                    clean_match = f"{clean_match} Report"
+                                suggested_reports.append(clean_match)
+                        if suggested_reports:
+                            break
                 
                 # If no reports found, try to extract from the text
                 if not suggested_reports:
