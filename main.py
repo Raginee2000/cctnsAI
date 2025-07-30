@@ -114,12 +114,19 @@ You are an expert at summarizing FIR (First Information Report) content. Create 
 2. Key Facts and Timeline
 3. Parties Involved
 4. Location and Jurisdiction
-5. District and Police Station
+5. District and Police Station - IMPORTANT: Always extract and include the district and police station information from the FIR content. Look for terms like "PS-", "Police Station", "Dist.", "District", etc.
 6. Evidence Mentioned
 7. Current Status
 8. Recommended Actions
 
-Make the summary clear, factual, and suitable for police records. Always extract and mention the district and police station information from the FIR content.
+Make the summary clear, factual, and suitable for police records. 
+CRITICAL: You MUST extract and include the district and police station information from the FIR content. Look for patterns like:
+- "PS-[Station Name]"
+- "Police Station [Name]"
+- "Dist. [District Name]" or "District [Name]"
+- "At [Location], PS-[Station], Dist. [District]"
+
+If district or police station information is not explicitly mentioned, indicate "Not specified" but always include this field.
 """
 
 @app.post("/chat")

@@ -33,15 +33,25 @@ function parseFirSummary(summaryText: string) {
     // Try different patterns to match summary lines
     let match = null;
     
-    // Pattern 1: "1. Case Type and Category: Robbery and Assault"
-    if (trimmedLine.match(/^\d+\./)) {
+    // Pattern 1: Tab-separated format "Case Type and Category\tRobbery and Assault"
+    if (trimmedLine.includes('\t')) {
+      const parts = trimmedLine.split('\t');
+      if (parts.length >= 2) {
+        summaryData.push({
+          category: parts[0].trim(),
+          details: parts.slice(1).join('\t').trim()
+        });
+      }
+    }
+    // Pattern 2: "1. Case Type and Category: Robbery and Assault"
+    else if (trimmedLine.match(/^\d+\./)) {
       match = trimmedLine.match(/^\d+\.\s*(.+?):\s*(.+)/);
     }
-    // Pattern 2: "Case Type and Category: Robbery and Assault"
+    // Pattern 3: "Case Type and Category: Robbery and Assault"
     else if (trimmedLine.includes(':')) {
       match = trimmedLine.match(/^(.+?):\s*(.+)/);
     }
-    // Pattern 3: "Case Type and Category - Robbery and Assault"
+    // Pattern 4: "Case Type and Category - Robbery and Assault"
     else if (trimmedLine.includes(' - ')) {
       match = trimmedLine.match(/^(.+?)\s*-\s*(.+)/);
     }
