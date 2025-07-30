@@ -257,7 +257,7 @@ function ChatFir() {
     return { label: keys[0], value: 'count' };
   };
 
-  const renderBotMessage = (msg: any) => {
+  const renderBotMessage = (msg: any): JSX.Element | string | null => {
     if (typeof msg === "string") {
       // Check if this is a FIR analysis options message
       if (msg.includes("I see you've provided FIR content") && msg.includes("Please respond with 1, 2, or 3")) {
