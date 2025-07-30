@@ -356,6 +356,11 @@ async def get_report_form(report_type: str):
     # If still not found, return error
     return {"error": f"Report type '{report_type}' not found"}
 
+@app.get("/available-reports")
+async def get_available_reports():
+    """Get list of all available report types"""
+    return {"reports": list(REPORT_FORMS.keys())}
+
 @app.post("/chat")
 async def chat(request: Request):
     data = await request.json()
@@ -433,7 +438,7 @@ async def chat(request: Request):
                 return {"answer": f"**FIR Summary:**\n\n{summary}", "sql": None}
             
             elif choice == '2':
-                # Analyze and suggest documents
+                # Analyze only
                 analysis_response = client.chat.completions.create(
                     model="gpt-3.5-turbo",
                     messages=[
@@ -445,135 +450,72 @@ async def chat(request: Request):
                 )
                 analysis = analysis_response.choices[0].message.content.strip()
                 
-                # Extract suggested reports from the analysis using multiple patterns
-                import re
+                # Simple and reliable report extraction based on keywords
                 suggested_reports = []
-                lines = analysis.split('\n')
                 
-                for line in lines:
-                    line = line.strip()
-                    # Pattern 1: "a) **Medical Injury Report**"
-                    match = re.search(r'[a-j]\)\s*\*\*(.+?)\*\*', line)
-                    if match:
-                        suggested_reports.append(match.group(1).strip())
-                        continue
-                    
-                    # Pattern 2: "a) Medical Injury Report"
-                    match = re.search(r'[a-j]\)\s*(.+?)(?:\s*\(|$)', line)
-                    if match:
-                        report_name = match.group(1).strip()
-                        # Clean up common prefixes/suffixes
-                        report_name = re.sub(r'^\*\*|\*\*$', '', report_name)
-                        if report_name and len(report_name) > 3:
-                            suggested_reports.append(report_name)
-                        continue
-                    
-                    # Pattern 3: Look for report types in bullet points
-                    if line.startswith('-') or line.startswith('•'):
-                        # Extract report types from lines like "- Medical Injury Report"
-                        report_match = re.search(r'[-•]\s*(.+?)(?:\s*\(|$)', line)
-                        if report_match:
-                            report_name = report_match.group(1).strip()
-                            # Clean up common prefixes/suffixes
-                            report_name = re.sub(r'^\*\*|\*\*$', '', report_name)
-                            if report_name and len(report_name) > 3:
-                                suggested_reports.append(report_name)
+                # Define keywords that map to specific reports
+                keyword_mapping = {
+                    "vehicle": "Vehicle Inspection Report",
+                    "bike": "Vehicle Inspection Report", 
+                    "motorcycle": "Vehicle Inspection Report",
+                    "car": "Vehicle Inspection Report",
+                    "witness": "Witness Statement",
+                    "cctv": "CCTV Footage Analysis",
+                    "camera": "CCTV Footage Analysis",
+                    "footage": "CCTV Footage Analysis",
+                    "medical": "Medical Injury Report",
+                    "injury": "Medical Injury Report",
+                    "hospital": "Medical Injury Report",
+                    "doctor": "Medical Injury Report",
+                    "postmortem": "Postmortem Report",
+                    "death": "Postmortem Report",
+                    "deceased": "Postmortem Report",
+                    "property": "Property Seizure Memo",
+                    "seizure": "Property Seizure Memo",
+                    "seized": "Property Seizure Memo",
+                    "recovered": "Property Seizure Memo",
+                    "forensic": "Forensic Report",
+                    "evidence": "Forensic Report",
+                    "digital": "Digital Evidence Report",
+                    "phone": "Digital Evidence Report",
+                    "mobile": "Digital Evidence Report",
+                    "computer": "Digital Evidence Report",
+                    "chemical": "Chemical Analysis Report",
+                    "ballistic": "Ballistic Report",
+                    "gun": "Ballistic Report",
+                    "firearm": "Ballistic Report",
+                    "dna": "DNA Analysis Report",
+                    "fingerprint": "Fingerprint Analysis",
+                    "document": "Document Verification Report",
+                    "financial": "Financial Transaction Analysis",
+                    "bank": "Financial Transaction Analysis",
+                    "transaction": "Financial Transaction Analysis"
+                }
                 
-                # Pattern 4: Look for "a. Vehicle Inspection Report Format:" pattern
-                if not suggested_reports:
-                    format_pattern = re.findall(r'[a-j]\.\s*([^*]+?)\s+Report\s+Format', analysis)
-                    for match in format_pattern:
-                        if match.strip() and len(match.strip()) > 3:
-                            suggested_reports.append(f"{match.strip()} Report")
-                
-                # Pattern 5: Look for "**a. Vehicle Inspection Report Format:**" pattern
-                if not suggested_reports:
-                    format_pattern = re.findall(r'\*\*[a-j]\.\s*([^*]+?)\s+Report\s+Format\*\*', analysis)
-                    for match in format_pattern:
-                        if match.strip() and len(match.strip()) > 3:
-                            suggested_reports.append(f"{match.strip()} Report")
-                
-                # Pattern 6: Look for specific report types in the text
-                if not suggested_reports:
-                    # Define the exact report types we support
-                    supported_reports = [
-                        "Medical Injury Report", "Postmortem Report", "Property Seizure Memo",
-                        "Witness Statement", "Forensic Report", "Vehicle Inspection Report",
-                        "CCTV Footage Analysis", "Digital Evidence Report", "Chemical Analysis Report",
-                        "Ballistic Report", "DNA Analysis Report", "Fingerprint Analysis",
-                        "Document Verification Report", "Financial Transaction Analysis"
-                    ]
-                    
-                    # Check which reports are mentioned in the analysis
-                    for report in supported_reports:
-                        if report.lower() in analysis.lower():
-                            suggested_reports.append(report)
-                
-                # Pattern 7: Look for partial matches and map them to full report names
-                if not suggested_reports:
-                    partial_matches = {
-                        "vehicle": "Vehicle Inspection Report",
-                        "witness": "Witness Statement", 
-                        "cctv": "CCTV Footage Analysis",
-                        "medical": "Medical Injury Report",
-                        "injury": "Medical Injury Report",
-                        "postmortem": "Postmortem Report",
-                        "property": "Property Seizure Memo",
-                        "seizure": "Property Seizure Memo",
-                        "forensic": "Forensic Report",
-                        "digital": "Digital Evidence Report",
-                        "chemical": "Chemical Analysis Report",
-                        "ballistic": "Ballistic Report",
-                        "dna": "DNA Analysis Report",
-                        "fingerprint": "Fingerprint Analysis",
-                        "document": "Document Verification Report",
-                        "financial": "Financial Transaction Analysis"
-                    }
-                    
-                    analysis_lower = analysis.lower()
-                    for keyword, report_name in partial_matches.items():
-                        if keyword in analysis_lower:
+                # Check which keywords are present in the analysis
+                analysis_lower = analysis.lower()
+                for keyword, report_name in keyword_mapping.items():
+                    if keyword in analysis_lower:
+                        if report_name not in suggested_reports:
                             suggested_reports.append(report_name)
                 
-                # Pattern 8: Look for specific format patterns from the AI response
+                # If no reports found, add some default ones based on common FIR types
                 if not suggested_reports:
-                    # Look for patterns like "**a. Vehicle Inspection Report Format:**"
-                    format_patterns = [
-                        r'\*\*[a-j]\.\s*([^*]+?)\s+Report\s+Format\*\*',
-                        r'[a-j]\.\s*([^*]+?)\s+Report\s+Format',
-                        r'\*\*([^*]+?)\s+Report\s+Format\*\*',
-                        r'([^*]+?)\s+Report\s+Format'
-                    ]
-                    
-                    for pattern in format_patterns:
-                        matches = re.findall(pattern, analysis, re.IGNORECASE)
-                        for match in matches:
-                            if match.strip() and len(match.strip()) > 3:
-                                # Clean up the match and add "Report" if not present
-                                clean_match = match.strip()
-                                if not clean_match.lower().endswith('report'):
-                                    clean_match = f"{clean_match} Report"
-                                suggested_reports.append(clean_match)
-                        if suggested_reports:
-                            break
+                    # Check for common FIR patterns
+                    if any(word in analysis_lower for word in ["theft", "robbery", "stolen"]):
+                        suggested_reports.extend(["Property Seizure Memo", "Witness Statement"])
+                    elif any(word in analysis_lower for word in ["assault", "attack", "fight"]):
+                        suggested_reports.extend(["Medical Injury Report", "Witness Statement"])
+                    elif any(word in analysis_lower for word in ["murder", "homicide", "killing"]):
+                        suggested_reports.extend(["Postmortem Report", "Forensic Report"])
+                    elif any(word in analysis_lower for word in ["fraud", "cheating", "scam"]):
+                        suggested_reports.extend(["Document Verification Report", "Financial Transaction Analysis"])
+                    else:
+                        # Default reports for any FIR
+                        suggested_reports.extend(["Witness Statement", "Property Seizure Memo"])
                 
-                # If no reports found, try to extract from the text
-                if not suggested_reports:
-                    # Look for common report types in the entire text
-                    common_reports = [
-                        "Medical Injury Report", "Postmortem Report", "Property Seizure Memo",
-                        "Witness Statement", "Forensic Report", "Vehicle Inspection Report",
-                        "CCTV Footage Analysis", "Digital Evidence Report", "Chemical Analysis Report",
-                        "Ballistic Report", "DNA Analysis Report", "Fingerprint Analysis",
-                        "Document Verification Report", "Financial Transaction Analysis"
-                    ]
-                    
-                    for report in common_reports:
-                        if report.lower() in analysis.lower():
-                            suggested_reports.append(report)
-                
-                # Remove duplicates and clean up
-                suggested_reports = list(dict.fromkeys([report.strip() for report in suggested_reports if report.strip() and len(report.strip()) > 3]))
+                # Limit to 5 reports maximum
+                suggested_reports = suggested_reports[:5]
                 
                 print(f"DEBUG: Extracted reports: {suggested_reports}")
                 
@@ -681,3 +623,13 @@ async def chat(request: Request):
                 return {"answer": rows, "sql": sql_query}
     except Exception as e:
         return {"error": str(e), "sql": sql_query}
+
+@app.get("/test-report")
+async def test_report():
+    """Test endpoint that always returns a working report form"""
+    return {
+        "title": "Test Report",
+        "fields": [
+            {"name": "test_field", "label": "Test Field", "type": "text", "required": True}
+        ]
+    }

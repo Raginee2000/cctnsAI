@@ -88,9 +88,12 @@ function ChatFir() {
   };
 
   const handleReportClick = async (reportType: string) => {
+    console.log('Clicking report:', reportType);
     try {
       const response = await axios.get(`http://localhost:8000/report-form/${encodeURIComponent(reportType)}`);
+      console.log('Report form response:', response.data);
       if (response.data.error) {
+        console.error('Report form error:', response.data.error);
         alert('Report form not found');
         return;
       }
@@ -100,6 +103,20 @@ function ChatFir() {
     } catch (error) {
       console.error('Error fetching report form:', error);
       alert('Error loading report form');
+    }
+  };
+
+  const testReportForm = async () => {
+    console.log('Testing report form...');
+    try {
+      const response = await axios.get('http://localhost:8000/test-report');
+      console.log('Test response:', response.data);
+      setCurrentReportForm(response.data);
+      setShowReportForm(true);
+      setFormData({});
+    } catch (error) {
+      console.error('Test error:', error);
+      alert('Test failed - backend not running');
     }
   };
 
@@ -587,7 +604,8 @@ function ChatFir() {
           onKeyDown={e => e.key === "Enter" && sendMessage()}
           placeholder="Ask about FIR data or paste FIR content for analysis..."
         />
-        <button onClick={sendMessage}>Send</button>
+        <button onClick={() => sendMessage()}>Send</button>
+        <button onClick={testReportForm} style={{background: '#ffc107', color: '#000'}}>Test Report</button>
       </div>
     </div>
   );
