@@ -160,6 +160,8 @@ function ChatFir() {
 
         // Handle FIR content analysis responses
         if (res.data.fir_content) {
+          console.log('Backend response:', res.data);
+          console.log('Suggested reports:', res.data.suggested_reports);
           setMessages(msgs => [
             ...msgs.slice(0, -1),
             { 

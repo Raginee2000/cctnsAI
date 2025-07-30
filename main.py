@@ -317,21 +317,61 @@ async def chat(request: Request):
                         {"role": "system", "content": FIR_ANALYSIS_PROMPT},
                         {"role": "user", "content": f"Please analyze this FIR content and suggest relevant document types:\n\n{fir_content}"}
                     ],
-                    max_tokens=600,
+                    max_tokens=800,
                     temperature=0.3,
                 )
                 analysis = analysis_response.choices[0].message.content.strip()
                 
-                # Extract suggested reports from the analysis
+                # Extract suggested reports from the analysis using multiple patterns
                 import re
                 suggested_reports = []
                 lines = analysis.split('\n')
+                
                 for line in lines:
-                    if line.strip().startswith(('a)', 'b)', 'c)', 'd)', 'e)', 'f)', 'g)', 'h)', 'i)', 'j)')):
-                        # Extract report type from lines like "a) Medical Injury Report"
-                        match = re.search(r'[a-j]\)\s*\*\*(.+?)\*\*', line)
-                        if match:
-                            suggested_reports.append(match.group(1).strip())
+                    line = line.strip()
+                    # Pattern 1: "a) **Medical Injury Report**"
+                    match = re.search(r'[a-j]\)\s*\*\*(.+?)\*\*', line)
+                    if match:
+                        suggested_reports.append(match.group(1).strip())
+                        continue
+                    
+                    # Pattern 2: "a) Medical Injury Report"
+                    match = re.search(r'[a-j]\)\s*(.+?)(?:\s*\(|$)', line)
+                    if match:
+                        report_name = match.group(1).strip()
+                        # Clean up common prefixes/suffixes
+                        report_name = re.sub(r'^\*\*|\*\*$', '', report_name)
+                        if report_name and len(report_name) > 3:
+                            suggested_reports.append(report_name)
+                        continue
+                    
+                    # Pattern 3: Look for report types in bullet points
+                    if line.startswith('-') or line.startswith('•'):
+                        # Extract report types from lines like "- Medical Injury Report"
+                        report_match = re.search(r'[-•]\s*(.+?)(?:\s*\(|$)', line)
+                        if report_match:
+                            report_name = report_match.group(1).strip()
+                            # Clean up common prefixes/suffixes
+                            report_name = re.sub(r'^\*\*|\*\*$', '', report_name)
+                            if report_name and len(report_name) > 3:
+                                suggested_reports.append(report_name)
+                
+                # If no reports found, try to extract from the text
+                if not suggested_reports:
+                    # Look for common report types in the entire text
+                    common_reports = [
+                        "Medical Injury Report", "Postmortem Report", "Property Seizure Memo",
+                        "Witness Statement", "Forensic Report", "Vehicle Inspection Report",
+                        "CCTV Footage Analysis", "Digital Evidence Report", "Chemical Analysis Report",
+                        "Ballistic Report", "DNA Analysis Report", "Fingerprint Analysis",
+                        "Document Verification Report", "Financial Transaction Analysis"
+                    ]
+                    
+                    for report in common_reports:
+                        if report.lower() in analysis.lower():
+                            suggested_reports.append(report)
+                
+                print(f"DEBUG: Extracted reports: {suggested_reports}")
                 
                 return {
                     "answer": f"**Suggested Reports for this FIR:**\n\n{analysis}", 
