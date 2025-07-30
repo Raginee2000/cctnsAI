@@ -23,6 +23,27 @@ function groupByField(data: any[], field: string) {
   return Object.entries(counts).map(([key, value]) => ({ [field]: key, count: value }));
 }
 
+function parseFirSummary(summaryText: string) {
+  const lines = summaryText.split('\n').filter(line => line.trim());
+  const summaryData: Array<{category: string, details: string}> = [];
+  
+  lines.forEach(line => {
+    const trimmedLine = line.trim();
+    if (trimmedLine.match(/^\d+\./)) {
+      // Extract category and details from lines like "1. Case Type and Category: Robbery and Assault"
+      const match = trimmedLine.match(/^\d+\.\s*(.+?):\s*(.+)/);
+      if (match) {
+        summaryData.push({
+          category: match[1].trim(),
+          details: match[2].trim()
+        });
+      }
+    }
+  });
+  
+  return summaryData;
+}
+
 function ChatFir() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -168,6 +189,30 @@ function ChatFir() {
           </div>
         );
       }
+      
+      // Check if this is a FIR summary response
+      if (msg.includes("**FIR Summary:**")) {
+        const summaryContent = msg.replace("**FIR Summary:**", "").trim();
+        const summaryData = parseFirSummary(summaryContent);
+        return (
+          <div className="fir-summary-table">
+            <div className="table-header">
+              <h4>FIR Summary</h4>
+            </div>
+            <table>
+              <tbody>
+                {summaryData.map((item, index) => (
+                  <tr key={index}>
+                    <th>{item.category}</th>
+                    <td>{item.details}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        );
+      }
+      
       return msg;
     } else if (Array.isArray(msg) && msg.length > 0) {
       return (

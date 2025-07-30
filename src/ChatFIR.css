@@ -363,6 +363,51 @@ tr:hover {
   background: #5a6268;
 }
 
+/* FIR Summary Table Styling */
+.fir-summary-table {
+  margin: 20px 0;
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.fir-summary-table table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.fir-summary-table th {
+  background: #f8f9fa;
+  padding: 15px 20px;
+  text-align: left;
+  font-weight: 600;
+  color: #495057;
+  border-bottom: 1px solid #dee2e6;
+  font-size: 14px;
+  width: 30%;
+  vertical-align: top;
+}
+
+.fir-summary-table td {
+  padding: 15px 20px;
+  border-bottom: 1px solid #e9ecef;
+  font-size: 14px;
+  line-height: 1.5;
+  word-wrap: break-word;
+  white-space: normal;
+}
+
+.fir-summary-table tr:hover {
+  background-color: #f8f9fa;
+}
+
+.fir-summary-table tr:last-child td,
+.fir-summary-table tr:last-child th {
+  border-bottom: none;
+}
+
 /* Responsive design */
 @media (max-width: 768px) {
   .chat-container {
