@@ -140,6 +140,11 @@ function ChatFir() {
       return { label: groupField, value: 'count' };
     }
     
+    // For raw data, use the selected group field as label and count as value
+    if (keys.includes(groupField)) {
+      return { label: groupField, value: 'count' };
+    }
+    
     // For raw data, use the first string field as label and count as value
     const stringFields = keys.filter(key => 
       typeof firstRow[key] === 'string' && 
@@ -279,9 +284,8 @@ function ChatFir() {
     let dataForChart = chartData;
     const { label, value } = getChartFields(chartData); // getChartFields uses groupField
 
-    // For pie/bar/line chart, if not already grouped, group by the selected field
+    // For all chart types, if not already grouped, group by the selected field
     if (
-      (chartType === 'pie' || chartType === 'bar' || chartType === 'line') &&
       chartData.length > 0 &&
       label && // Add null check for label
       (!chartData[0].count || !chartData[0][label]) // Check if data is already aggregated
