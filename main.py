@@ -438,7 +438,7 @@ async def chat(request: Request):
                 return {"answer": f"**FIR Summary:**\n\n{summary}", "sql": None}
             
             elif choice == '2':
-                # Analyze only
+                # Analyze only - Use a simpler approach
                 analysis_response = client.chat.completions.create(
                     model="gpt-3.5-turbo",
                     messages=[
@@ -450,74 +450,61 @@ async def chat(request: Request):
                 )
                 analysis = analysis_response.choices[0].message.content.strip()
                 
-                # Simple and reliable report extraction based on keywords
+                # Simple keyword-based report suggestion
                 suggested_reports = []
+                fir_content_lower = fir_content.lower()
                 
-                # Define keywords that map to specific reports
-                keyword_mapping = {
-                    "vehicle": "Vehicle Inspection Report",
-                    "bike": "Vehicle Inspection Report", 
-                    "motorcycle": "Vehicle Inspection Report",
-                    "car": "Vehicle Inspection Report",
-                    "witness": "Witness Statement",
-                    "cctv": "CCTV Footage Analysis",
-                    "camera": "CCTV Footage Analysis",
-                    "footage": "CCTV Footage Analysis",
-                    "medical": "Medical Injury Report",
-                    "injury": "Medical Injury Report",
-                    "hospital": "Medical Injury Report",
-                    "doctor": "Medical Injury Report",
-                    "postmortem": "Postmortem Report",
-                    "death": "Postmortem Report",
-                    "deceased": "Postmortem Report",
-                    "property": "Property Seizure Memo",
-                    "seizure": "Property Seizure Memo",
-                    "seized": "Property Seizure Memo",
-                    "recovered": "Property Seizure Memo",
-                    "forensic": "Forensic Report",
-                    "evidence": "Forensic Report",
-                    "digital": "Digital Evidence Report",
-                    "phone": "Digital Evidence Report",
-                    "mobile": "Digital Evidence Report",
-                    "computer": "Digital Evidence Report",
-                    "chemical": "Chemical Analysis Report",
-                    "ballistic": "Ballistic Report",
-                    "gun": "Ballistic Report",
-                    "firearm": "Ballistic Report",
-                    "dna": "DNA Analysis Report",
-                    "fingerprint": "Fingerprint Analysis",
-                    "document": "Document Verification Report",
-                    "financial": "Financial Transaction Analysis",
-                    "bank": "Financial Transaction Analysis",
-                    "transaction": "Financial Transaction Analysis"
-                }
+                # Check for specific keywords and suggest appropriate reports
+                if any(word in fir_content_lower for word in ["vehicle", "bike", "motorcycle", "car", "registration"]):
+                    suggested_reports.append("Vehicle Inspection Report")
                 
-                # Check which keywords are present in the analysis
-                analysis_lower = analysis.lower()
-                for keyword, report_name in keyword_mapping.items():
-                    if keyword in analysis_lower:
-                        if report_name not in suggested_reports:
-                            suggested_reports.append(report_name)
+                if any(word in fir_content_lower for word in ["witness", "saw", "seen", "observed"]):
+                    suggested_reports.append("Witness Statement")
                 
-                # If no reports found, add some default ones based on common FIR types
+                if any(word in fir_content_lower for word in ["cctv", "camera", "footage", "video"]):
+                    suggested_reports.append("CCTV Footage Analysis")
+                
+                if any(word in fir_content_lower for word in ["injury", "hurt", "wound", "medical", "hospital", "doctor"]):
+                    suggested_reports.append("Medical Injury Report")
+                
+                if any(word in fir_content_lower for word in ["death", "deceased", "murder", "killed"]):
+                    suggested_reports.append("Postmortem Report")
+                
+                if any(word in fir_content_lower for word in ["seized", "recovered", "stolen", "property", "items"]):
+                    suggested_reports.append("Property Seizure Memo")
+                
+                if any(word in fir_content_lower for word in ["evidence", "forensic", "scientific"]):
+                    suggested_reports.append("Forensic Report")
+                
+                if any(word in fir_content_lower for word in ["phone", "mobile", "digital", "computer", "device"]):
+                    suggested_reports.append("Digital Evidence Report")
+                
+                if any(word in fir_content_lower for word in ["chemical", "substance", "drug"]):
+                    suggested_reports.append("Chemical Analysis Report")
+                
+                if any(word in fir_content_lower for word in ["gun", "firearm", "bullet", "ballistic"]):
+                    suggested_reports.append("Ballistic Report")
+                
+                if any(word in fir_content_lower for word in ["dna", "blood", "biological"]):
+                    suggested_reports.append("DNA Analysis Report")
+                
+                if any(word in fir_content_lower for word in ["fingerprint", "print"]):
+                    suggested_reports.append("Fingerprint Analysis")
+                
+                if any(word in fir_content_lower for word in ["document", "paper", "certificate"]):
+                    suggested_reports.append("Document Verification Report")
+                
+                if any(word in fir_content_lower for word in ["bank", "financial", "transaction", "money", "account"]):
+                    suggested_reports.append("Financial Transaction Analysis")
+                
+                # If no specific reports found, add default ones
                 if not suggested_reports:
-                    # Check for common FIR patterns
-                    if any(word in analysis_lower for word in ["theft", "robbery", "stolen"]):
-                        suggested_reports.extend(["Property Seizure Memo", "Witness Statement"])
-                    elif any(word in analysis_lower for word in ["assault", "attack", "fight"]):
-                        suggested_reports.extend(["Medical Injury Report", "Witness Statement"])
-                    elif any(word in analysis_lower for word in ["murder", "homicide", "killing"]):
-                        suggested_reports.extend(["Postmortem Report", "Forensic Report"])
-                    elif any(word in analysis_lower for word in ["fraud", "cheating", "scam"]):
-                        suggested_reports.extend(["Document Verification Report", "Financial Transaction Analysis"])
-                    else:
-                        # Default reports for any FIR
-                        suggested_reports.extend(["Witness Statement", "Property Seizure Memo"])
+                    suggested_reports = ["Witness Statement", "Property Seizure Memo"]
                 
                 # Limit to 5 reports maximum
                 suggested_reports = suggested_reports[:5]
                 
-                print(f"DEBUG: Extracted reports: {suggested_reports}")
+                print(f"DEBUG: Suggested reports: {suggested_reports}")
                 
                 return {
                     "answer": f"**Suggested Reports for this FIR:**\n\n{analysis}", 

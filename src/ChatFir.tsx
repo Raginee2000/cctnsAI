@@ -89,20 +89,30 @@ function ChatFir() {
 
   const handleReportClick = async (reportType: string) => {
     console.log('Clicking report:', reportType);
+    console.log('Available reports in REPORT_FORMS:', Object.keys(REPORT_FORMS || {}));
+    
     try {
-      const response = await axios.get(`http://localhost:8000/report-form/${encodeURIComponent(reportType)}`);
+      const url = `http://localhost:8000/report-form/${encodeURIComponent(reportType)}`;
+      console.log('Making request to:', url);
+      
+      const response = await axios.get(url);
       console.log('Report form response:', response.data);
+      
       if (response.data.error) {
         console.error('Report form error:', response.data.error);
-        alert('Report form not found');
+        alert(`Report form not found: ${response.data.error}`);
         return;
       }
+      
       setCurrentReportForm(response.data);
       setShowReportForm(true);
       setFormData({});
-    } catch (error) {
+      console.log('Form opened successfully');
+      
+    } catch (error: any) {
       console.error('Error fetching report form:', error);
-      alert('Error loading report form');
+      console.error('Error response:', error.response?.data);
+      alert(`Error loading report form: ${error.message}`);
     }
   };
 
@@ -467,23 +477,15 @@ function ChatFir() {
 
   const renderReportLinks = (suggestedReports: string[]) => {
     if (!suggestedReports || suggestedReports.length === 0) return null;
-    
     const letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'];
-    
     return (
       <div className="report-links-container">
-        <div className="report-links-header">
-          <h4>Click on a report to generate:</h4>
-        </div>
+        <div className="report-links-header"><h4>Click on a report to generate:</h4></div>
         <div className="report-links-list">
           {suggestedReports.map((report, index) => (
-            <button
-              key={index}
-              className="report-link-button"
-              onClick={() => handleReportClick(report)}
-            >
+            <div key={index} className="report-link-label" onClick={() => handleReportClick(report)}>
               {letters[index]}) {report}
-            </button>
+            </div>
           ))}
         </div>
       </div>

@@ -594,6 +594,31 @@ tr:hover {
   justify-content: flex-start;
 }
 
+.report-link-label {
+  background: #007bff;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  text-align: center;
+  transition: background-color 0.2s;
+  font-weight: 500;
+  white-space: nowrap;
+  min-width: 120px;
+  max-width: 200px;
+  user-select: none;
+}
+
+.report-link-label:hover {
+  background: #0056b3;
+}
+
+.report-link-label:active {
+  background: #004085;
+}
+
 .report-link-button {
   background: #007bff;
   color: white;
@@ -794,6 +819,15 @@ tr:hover {
   .report-links-list {
     flex-direction: column;
     gap: 6px;
+  }
+  
+  .report-link-label {
+    width: 100%;
+    margin-bottom: 4px;
+    font-size: 11px;
+    padding: 6px 8px;
+    min-width: auto;
+    max-width: none;
   }
   
   .report-link-button {
