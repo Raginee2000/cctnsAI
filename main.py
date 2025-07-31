@@ -61,6 +61,13 @@ For example:
 - Previous: "show cases for koraput dist" → SELECT * FROM fir_records_CAW WHERE district = 'Koraput'
 - Follow-up: "show only child related cases from the above list" → SELECT * FROM fir_records_CAW WHERE district = 'Koraput' AND (major_head LIKE '%child%' OR description LIKE '%child%')
 
+CRITICAL INSTRUCTION FOR IPC FILTERING:
+When user asks for cases with "only" or "exactly" a specific IPC section, use exact matching:
+- For "only IPC 420" or "exactly IPC 420" → use ipc_sections = '420' (exact match)
+- For "cases containing IPC 420" → use ipc_sections LIKE '%420%' (contains)
+- For "cases with IPC 420 and 307" → use ipc_sections LIKE '%420%' AND ipc_sections LIKE '%307%'
+- For "cases with only IPC 420" → use ipc_sections = '420' (exact match, no other IPCs)
+
 IMPORTANT:
 - For each user question, generate the most appropriate single SQL query (MySQL dialect).
 - For counts, use SELECT COUNT(*).
@@ -113,6 +120,18 @@ A: SELECT * FROM fir_records_CAW WHERE district = 'Koraput' AND case_status LIKE
 
 Q: show only theft cases from previous results
 A: SELECT * FROM fir_records_CAW WHERE district = 'Koraput' AND major_head LIKE '%theft%';
+
+Q: Give me cases having only ipc 420
+A: SELECT * FROM fir_records_CAW WHERE ipc_sections = '420';
+
+Q: Show cases containing ipc 420
+A: SELECT * FROM fir_records_CAW WHERE ipc_sections LIKE '%420%';
+
+Q: Show cases with only ipc 420 and 307
+A: SELECT * FROM fir_records_CAW WHERE ipc_sections = '420, 307' OR ipc_sections = '307, 420';
+
+Q: Count cases with exactly ipc 420
+A: SELECT COUNT(*) FROM fir_records_CAW WHERE ipc_sections = '420';
 """
 
 # FIR Analysis and Summarization Prompts
