@@ -46,19 +46,36 @@ case_status VARCHAR(50),
 major_head VARCHAR(100)
 """
 
+# Replace the existing SYSTEM_PROMPT with enhanced version
 SYSTEM_PROMPT = f"""
 You are a helpful assistant for police data analysis. You answer questions about the FIR database with the following schema:
 {TABLE_SCHEMA}
+
+CRITICAL INSTRUCTION FOR FOLLOW-UP QUESTIONS:
+When a user asks to filter or show specific cases "from the above list", "from previous results", or "from the displayed data", you MUST:
+1. Keep the original conditions from the previous query (like district, date range, etc.)
+2. ADD the new filter condition using AND
+3. NEVER start a completely new query
+
+For example:
+- Previous: "show cases for koraput dist" → SELECT * FROM fir_records_CAW WHERE district = 'Koraput'
+- Follow-up: "show only child related cases from the above list" → SELECT * FROM fir_records_CAW WHERE district = 'Koraput' AND (major_head LIKE '%child%' OR description LIKE '%child%')
 
 IMPORTANT:
 - For each user question, generate the most appropriate single SQL query (MySQL dialect).
 - For counts, use SELECT COUNT(*).
 - For details, use SELECT * with relevant WHERE clauses.
 - For comparisons (e.g., year-wise, district-wise), use GROUP BY and return aggregated results.
-- For follow-up questions like "show me all", "show me in tabular form", "show details", or "list them", use the chat history to infer the last filter or context, and generate a SELECT * query with the same filter as the previous count or summary.
-- If the previous answer was a table, you may repeat the table.
+- For follow-up questions, use the chat history to understand context and combine previous filters with new ones.
 - NEVER generate multiple SQL statements separated by semicolons.
 - Only return the SQL query, nothing else.
+
+FOLLOW-UP QUESTION HANDLING:
+- When user says "from the above list", "from previous results", "from the displayed data", "filter the above", "show only X from above", etc., combine the previous query conditions with new filters
+- Use the context from chat history to understand what was previously displayed
+- For example: if previous query was "SELECT * FROM fir_records_CAW WHERE district = 'Koraput'" and user asks "show only child related cases", generate: "SELECT * FROM fir_records_CAW WHERE district = 'Koraput' AND (major_head LIKE '%child%' OR description LIKE '%child%')"
+- CRITICAL: When filtering from previous results, ALWAYS include the original conditions (like district) AND add the new filter condition
+- NEVER start a new query from scratch when user asks to filter from previous results
 
 EXAMPLES:
 Q: How many FIRs were filed in the last 6 months?
@@ -84,6 +101,18 @@ A: SELECT * FROM fir_records_CAW WHERE fir_no = 'FIR00136';
 
 Q: show me all women and child related cases only
 A: SELECT * FROM fir_records_CAW WHERE major_head LIKE '%woman%' OR major_head LIKE '%child%' OR description LIKE '%woman%' OR description LIKE '%child%';
+
+Q: show cases for koraput dist
+A: SELECT * FROM fir_records_CAW WHERE district = 'Koraput';
+
+Q: show only child related cases from the above list
+A: SELECT * FROM fir_records_CAW WHERE district = 'Koraput' AND (major_head LIKE '%child%' OR description LIKE '%child%');
+
+Q: filter pending cases from the above
+A: SELECT * FROM fir_records_CAW WHERE district = 'Koraput' AND case_status LIKE '%pending%';
+
+Q: show only theft cases from previous results
+A: SELECT * FROM fir_records_CAW WHERE district = 'Koraput' AND major_head LIKE '%theft%';
 """
 
 # FIR Analysis and Summarization Prompts
@@ -553,6 +582,30 @@ async def chat(request: Request):
 
     # Build messages for OpenAI to generate SQL - SANITIZE ALL CONTENT
     messages = [{"role": "system", "content": SYSTEM_PROMPT}]
+    
+    # Enhanced context building for follow-up questions
+    context_summary = ""
+    last_query_conditions = []
+    
+    # Look for the most recent query conditions in chat history
+    for turn in reversed(chat_history):
+        if turn.get("bot") and isinstance(turn["bot"], list) and len(turn["bot"]) > 0:
+            # This was a table result - extract conditions
+            sample_row = turn["bot"][0]
+            if "district" in sample_row:
+                last_query_conditions.append(f"district = '{sample_row['district']}'")
+            if "major_head" in sample_row:
+                last_query_conditions.append(f"major_head LIKE '%{sample_row['major_head']}%'")
+            if "case_status" in sample_row:
+                last_query_conditions.append(f"case_status LIKE '%{sample_row['case_status']}%'")
+            break
+    
+    # Add context for follow-up questions
+    follow_up_keywords = ["from above", "from the above", "from previous", "filter", "show only", "from the displayed", "from the list", "from above list"]
+    if last_query_conditions and any(keyword in user_message.lower() for keyword in follow_up_keywords):
+        context_summary = f"Previous query conditions: {' AND '.join(last_query_conditions)}. "
+        messages.append({"role": "system", "content": f"IMPORTANT: The user is asking a follow-up question. {context_summary}Combine these conditions with any new filters the user requests. For example, if user asks 'show only child related cases', add 'AND (major_head LIKE '%child%' OR description LIKE '%child%')' to the existing conditions."})
+    
     for turn in chat_history:
         user_content = str(turn.get("user", "")) if turn.get("user") is not None else ""
         bot_content = str(turn.get("bot", "")) if turn.get("bot") is not None else ""
