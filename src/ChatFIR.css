@@ -839,3 +839,190 @@ tr:hover {
     max-width: none;
   }
 }
+
+/* Download Options Modal Styles */
+.download-options {
+  max-width: 500px;
+  width: 90%;
+}
+
+.download-options-content {
+  padding: 20px;
+  text-align: center;
+}
+
+.download-options-content p {
+  margin-bottom: 20px;
+  font-size: 16px;
+  color: #666;
+}
+
+.download-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.download-btn {
+  padding: 15px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 50px;
+}
+
+.pdf-btn {
+  background: linear-gradient(135deg, #ff4757, #ff3742);
+  color: white;
+}
+
+.pdf-btn:hover {
+  background: linear-gradient(135deg, #ff3742, #ff2f3a);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 71, 87, 0.3);
+}
+
+.excel-btn {
+  background: linear-gradient(135deg, #2ed573, #1e90ff);
+  color: white;
+}
+
+.excel-btn:hover {
+  background: linear-gradient(135deg, #1e90ff, #2ed573);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(46, 213, 115, 0.3);
+}
+
+.docs-btn {
+  background: linear-gradient(135deg, #5352ed, #3742fa);
+  color: white;
+}
+
+.docs-btn:hover {
+  background: linear-gradient(135deg, #3742fa, #5352ed);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(83, 82, 237, 0.3);
+}
+
+.download-btn.cancel-btn {
+  background: linear-gradient(135deg, #747d8c, #57606f);
+  color: white;
+}
+
+.download-btn.cancel-btn:hover {
+  background: linear-gradient(135deg, #57606f, #747d8c);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(116, 125, 140, 0.3);
+}
+
+@media (max-width: 768px) {
+  .download-buttons {
+    gap: 10px;
+  }
+  
+  .download-btn {
+    padding: 12px 16px;
+    font-size: 14px;
+    min-height: 45px;
+  }
+}
+/* Download Options Modal Styles */
+.download-options {
+  max-width: 500px;
+  width: 90%;
+}
+
+.download-options-content {
+  padding: 20px;
+  text-align: center;
+}
+
+.download-options-content p {
+  margin-bottom: 20px;
+  font-size: 16px;
+  color: #666;
+}
+
+.download-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.download-btn {
+  padding: 15px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 50px;
+}
+
+.pdf-btn {
+  background: linear-gradient(135deg, #ff4757, #ff3742);
+  color: white;
+}
+
+.pdf-btn:hover {
+  background: linear-gradient(135deg, #ff3742, #ff2f3a);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 71, 87, 0.3);
+}
+
+.excel-btn {
+  background: linear-gradient(135deg, #2ed573, #1e90ff);
+  color: white;
+}
+
+.excel-btn:hover {
+  background: linear-gradient(135deg, #1e90ff, #2ed573);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(46, 213, 115, 0.3);
+}
+
+.docs-btn {
+  background: linear-gradient(135deg, #5352ed, #3742fa);
+  color: white;
+}
+
+.docs-btn:hover {
+  background: linear-gradient(135deg, #3742fa, #5352ed);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(83, 82, 237, 0.3);
+}
+
+.download-btn.cancel-btn {
+  background: linear-gradient(135deg, #747d8c, #57606f);
+  color: white;
+}
+
+.download-btn.cancel-btn:hover {
+  background: linear-gradient(135deg, #57606f, #747d8c);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(116, 125, 140, 0.3);
+}
+
+@media (max-width: 768px) {
+  .download-buttons {
+    gap: 10px;
+  }
+  
+  .download-btn {
+    padding: 12px 16px;
+    font-size: 14px;
+    min-height: 45px;
+  }
+}

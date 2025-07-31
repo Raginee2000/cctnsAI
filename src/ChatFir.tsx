@@ -82,6 +82,8 @@ function ChatFir() {
   const [showReportForm, setShowReportForm] = useState(false);
   const [currentReportForm, setCurrentReportForm] = useState<any>(null);
   const [formData, setFormData] = useState<Record<string, any>>({});
+  const [showDownloadOptions, setShowDownloadOptions] = useState(false);
+  const [formDataForDownload, setFormDataForDownload] = useState<{formData: Record<string, any>, reportType: string} | null>(null);
 
   const handleFirOptionClick = (option: string) => {
     sendMessage(option);
@@ -131,12 +133,15 @@ function ChatFir() {
 
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Here you can handle form submission (save to database, generate PDF, etc.)
+    
+    // Get the report type from the current form
+    const reportType = currentReportForm?.title || "Report";
+    console.log('Submitting form for report type:', reportType);
     console.log('Form data:', formData);
-    alert('Report form submitted successfully!');
-    setShowReportForm(false);
-    setCurrentReportForm(null);
-    setFormData({});
+    
+    // Show download options
+    setShowDownloadOptions(true);
+    setFormDataForDownload({ formData, reportType });
   };
 
   const handleFormInputChange = (fieldName: string, value: any) => {
@@ -144,6 +149,47 @@ function ChatFir() {
       ...prev,
       [fieldName]: value
     }));
+  };
+
+  const handleDownload = async (format: 'pdf' | 'excel' | 'docs') => {
+    if (!formDataForDownload) return;
+    
+    try {
+      const { formData, reportType } = formDataForDownload;
+      console.log(`Downloading ${format} for report type:`, reportType);
+      
+      const response = await axios.post(
+        `http://localhost:8000/generate-${format}`,
+        {
+          formData: formData,
+          reportType: reportType
+        },
+        {
+          responseType: 'blob'
+        }
+      );
+      
+      // Create download link
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `${reportType.replace(' ', '_')}_${new Date().toISOString().slice(0, 10)}.${format === 'excel' ? 'xlsx' : format === 'docs' ? 'docx' : 'pdf'}`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      
+      // Close download options
+      setShowDownloadOptions(false);
+      setFormDataForDownload(null);
+      setShowReportForm(false);
+      setCurrentReportForm(null);
+      setFormData({});
+      
+    } catch (error: any) {
+      console.error(`Error downloading ${format}:`, error);
+      alert(`Error downloading ${format.toUpperCase()}: ${error.message}`);
+    }
   };
 
   const buildHistory = () => {
@@ -596,6 +642,56 @@ function ChatFir() {
         ))}
         {renderChart()}
         {renderReportForm()}
+        {showDownloadOptions && (
+          <div className="modal-overlay">
+            <div className="modal-content download-options">
+              <div className="modal-header">
+                <h3>Download Report</h3>
+                <button 
+                  className="modal-close"
+                  onClick={() => {
+                    setShowDownloadOptions(false);
+                    setFormDataForDownload(null);
+                  }}
+                >
+                  ×
+                </button>
+              </div>
+              <div className="download-options-content">
+                <p>Choose a format to download your report:</p>
+                <div className="download-buttons">
+                  <button 
+                    onClick={() => handleDownload('pdf')}
+                    className="download-btn pdf-btn"
+                  >
+                    📄 Generate PDF
+                  </button>
+                  <button 
+                    onClick={() => handleDownload('excel')}
+                    className="download-btn excel-btn"
+                  >
+                    📊 Generate Excel
+                  </button>
+                  <button 
+                    onClick={() => handleDownload('docs')}
+                    className="download-btn docs-btn"
+                  >
+                    📝 Generate Word Doc
+                  </button>
+                  <button 
+                    onClick={() => {
+                      setShowDownloadOptions(false);
+                      setFormDataForDownload(null);
+                    }}
+                    className="download-btn cancel-btn"
+                  >
+                    ❌ Cancel
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
       
       <div className="input-area">
