@@ -5,6 +5,16 @@ from sqlalchemy import create_engine, text
 from dotenv import load_dotenv
 import openai
 import re
+import io
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import A4
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Image, Table, TableStyle
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.units import inch, cm
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+from reportlab.pdfgen import canvas
+from reportlab.lib.enums import TA_CENTER, TA_LEFT
 
 load_dotenv()
 
@@ -620,3 +630,181 @@ async def test_report():
             {"name": "test_field", "label": "Test Field", "type": "text", "required": True}
         ]
     }
+
+def generate_medical_examination_pdf(form_data: dict, report_type: str) -> bytes:
+    """
+    Generate a professional medical examination PDF with logo and proper format
+    """
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=2*cm, leftMargin=2*cm, topMargin=2*cm, bottomMargin=2*cm)
+    story = []
+    
+    # Get styles
+    styles = getSampleStyleSheet()
+    
+    # Custom styles
+    header_style = ParagraphStyle(
+        'CustomHeader',
+        parent=styles['Heading1'],
+        fontSize=16,
+        spaceAfter=20,
+        alignment=TA_CENTER,
+        fontName='Helvetica-Bold'
+    )
+    
+    title_style = ParagraphStyle(
+        'CustomTitle',
+        parent=styles['Heading2'],
+        fontSize=14,
+        spaceAfter=15,
+        alignment=TA_CENTER,
+        fontName='Helvetica-Bold'
+    )
+    
+    normal_style = ParagraphStyle(
+        'CustomNormal',
+        parent=styles['Normal'],
+        fontSize=10,
+        spaceAfter=6,
+        alignment=TA_LEFT,
+        fontName='Helvetica'
+    )
+    
+    bold_style = ParagraphStyle(
+        'CustomBold',
+        parent=styles['Normal'],
+        fontSize=10,
+        spaceAfter=6,
+        alignment=TA_LEFT,
+        fontName='Helvetica-Bold'
+    )
+    
+    # Add logo (if available) - try multiple possible paths
+    logo_paths = [
+        "assest/OPLogo.png",
+        "assets/OPLogo.png", 
+        "static/OPLogo.png",
+        "OPLogo.png",
+        "logo.png"
+    ]
+    
+    logo_added = False
+    for logo_path in logo_paths:
+        if os.path.exists(logo_path):
+            try:
+                img = Image(logo_path, width=2*inch, height=1*inch)
+                img.hAlign = 'LEFT'
+                story.append(img)
+                story.append(Spacer(1, 10))
+                logo_added = True
+                break
+            except Exception as e:
+                print(f"Logo error for {logo_path}: {e}")
+                continue
+    
+    if not logo_added:
+        # Add a placeholder text for logo
+        story.append(Paragraph("LOGO PLACEHOLDER", bold_style))
+        story.append(Spacer(1, 10))
+    
+    # Add report title
+    story.append(Paragraph("Medical examination of victim of Sexual Assault", header_style))
+    story.append(Spacer(1, 20))
+    
+    # Add reference and date
+    ref_no = form_data.get('ref_no', '0000/2025')
+    district = form_data.get('district', 'Kendrapada')
+    police_station = form_data.get('police_station', '')
+    date = form_data.get('date', '01/01/2025')
+    
+    ref_text = f"Ref. No. {ref_no}, District: {district}, Police Station: {police_station}<br/>Date: {date}"
+    story.append(Paragraph(ref_text, normal_style))
+    story.append(Spacer(1, 15))
+    
+    # Add recipient
+    chc_name = form_data.get('chc_name', 'CHC Name')
+    recipient_text = f"To<br/>The CHC, {chc_name}, {district}"
+    story.append(Paragraph(recipient_text, normal_style))
+    story.append(Spacer(1, 10))
+    
+    # Add salutation
+    story.append(Paragraph("Sir/Madam,", normal_style))
+    story.append(Spacer(1, 10))
+    
+    # Add request
+    request_text = "Please conduct Medical examination on the following victim of sexual assault:"
+    story.append(Paragraph(request_text, normal_style))
+    story.append(Spacer(1, 15))
+    
+    # Create table for victim details with proper formatting
+    table_data = [
+        ['1.', 'Name', form_data.get('patient_name', 'Not provided')],
+        ['2.', 'Age', form_data.get('age', 'Not provided')],
+        ['3.', 'Sex', form_data.get('gender', 'Not provided')],
+        ['4.', 'D/W/O', form_data.get('son_daughter_of', 'Not provided')],
+        ['5.', 'Address', form_data.get('address', 'Not provided')],
+        ['6.', 'District', form_data.get('district', 'Not provided')],
+        ['7.', 'Police Station', form_data.get('police_station', 'Not provided')],
+        ['8.', 'Name of the Investigating Officer', form_data.get('investigating_officer', 'Not provided')],
+        ['9.', 'Name of the accompanying police constable', form_data.get('accompanying_constable', 'Not provided')],
+        ['10.', 'Name of the relative (If accompanying)', form_data.get('relative_name', 'Not provided')],
+        ['11.', 'The case in brief', form_data.get('case_in_brief', 'Not provided')],
+        ['12.', 'Samples to be preserved', form_data.get('samples', 'Not provided')],
+        ['13.', 'Any other request', form_data.get('other_request', 'Not provided')],
+    ]
+    
+    # Create table with better styling
+    table = Table(table_data, colWidths=[0.5*inch, 2.5*inch, 3*inch])
+    table.setStyle(TableStyle([
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+        ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+        ('FONTSIZE', (0, 0), (-1, -1), 9),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+        ('TOPPADDING', (0, 0), (-1, -1), 6),
+        ('LEFTPADDING', (0, 0), (-1, -1), 3),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 3),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+        ('BACKGROUND', (0, 0), (0, -1), colors.lightgrey),
+        ('BACKGROUND', (1, 0), (1, -1), colors.lightgrey),
+        ('FONTNAME', (0, 0), (1, -1), 'Helvetica-Bold'),
+    ]))
+    
+    story.append(table)
+    story.append(Spacer(1, 15))
+    
+    # Add medical queries
+    queries_text = """Please opine on the following queries:
+a. Whether there are any injuries on her private and any other body parts suggestive of recent forceful sexual intercourse?
+b. Whether the victim is pregnant?
+c. Whether the victim is suffering from any venereal diseases?
+d. Whether any other treatment is required?"""
+    
+    story.append(Paragraph(queries_text, normal_style))
+    story.append(Spacer(1, 20))
+    
+    # Add signature section
+    signature_data = [
+        ['Name in Full:', form_data.get('officer_name', 'Not provided')],
+        ['Police Station:', form_data.get('police_station', '')],
+        ['District:', form_data.get('district', 'Kendrapada')],
+        ['Contact No.:', form_data.get('contact_no', 'N/A')],
+    ]
+    
+    signature_table = Table(signature_data, colWidths=[1.5*inch, 4*inch])
+    signature_table.setStyle(TableStyle([
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+        ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
+        ('FONTNAME', (1, 0), (1, -1), 'Helvetica'),
+        ('FONTSIZE', (0, 0), (-1, -1), 10),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 3),
+        ('TOPPADDING', (0, 0), (-1, -1), 3),
+    ]))
+    
+    story.append(signature_table)
+    
+    # Build PDF
+    doc.build(story)
+    buffer.seek(0)
+    return buffer.getvalue()
