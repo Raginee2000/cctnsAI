@@ -105,10 +105,16 @@ function ChatFir() {
         return;
       }
       
+      // Handle auto-filled data if present
+      if (response.data.auto_filled_data) {
+        setFormData(response.data.auto_filled_data);
+      } else {
+        setFormData({});
+      }
+      
       setCurrentReportForm(response.data);
       setShowReportForm(true);
-      setFormData({});
-      console.log('Form opened successfully');
+      console.log('Form opened successfully with structure:', response.data);
       
     } catch (error: any) {
       console.error('Error fetching report form:', error);
@@ -134,8 +140,9 @@ function ChatFir() {
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Get the report type from the current form
-    const reportType = currentReportForm?.title || "Report";
+    // Handle different response structures
+    const formStructure = currentReportForm?.form_structure || currentReportForm;
+    const reportType = formStructure?.title || "Report";
     console.log('Submitting form for report type:', reportType);
     console.log('Form data:', formData);
     
@@ -540,11 +547,47 @@ function ChatFir() {
   const renderReportForm = () => {
     if (!showReportForm || !currentReportForm) return null;
 
+    // Handle different response structures
+    const formStructure = currentReportForm.form_structure || currentReportForm;
+    const fields = formStructure.fields || [];
+    const title = formStructure.title || "Report Form";
+
+    console.log('Rendering form with structure:', formStructure);
+    console.log('Fields:', fields);
+
+    if (!fields || fields.length === 0) {
+      return (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h3>Error Loading Form</h3>
+              <button 
+                className="modal-close"
+                onClick={() => {
+                  setShowReportForm(false);
+                  setCurrentReportForm(null);
+                  setFormData({});
+                }}
+              >
+                ×
+              </button>
+            </div>
+            <div style={{ padding: '20px', textAlign: 'center' }}>
+              <p>Unable to load form structure. Please try again.</p>
+              <pre style={{ fontSize: '12px', color: '#666', textAlign: 'left' }}>
+                {JSON.stringify(currentReportForm, null, 2)}
+              </pre>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="modal-overlay">
         <div className="modal-content">
           <div className="modal-header">
-            <h3>{currentReportForm.title}</h3>
+            <h3>{title}</h3>
             <button 
               className="modal-close"
               onClick={() => {
@@ -557,7 +600,7 @@ function ChatFir() {
             </button>
           </div>
           <form onSubmit={handleFormSubmit} className="report-form">
-            {currentReportForm.fields.map((field: any, index: number) => (
+            {fields.map((field: any, index: number) => (
               <div key={index} className="form-field">
                 <label htmlFor={field.name}>
                   {field.label}
@@ -581,7 +624,7 @@ function ChatFir() {
                     required={field.required}
                   >
                     <option value="">Select {field.label}</option>
-                    {field.options.map((option: string) => (
+                    {field.options && field.options.map((option: string) => (
                       <option key={option} value={option}>{option}</option>
                     ))}
                   </select>
