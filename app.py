@@ -1,6 +1,6 @@
 import os.path
 import numpy as np
-from fastapi import FastAPI, File, UploadFile, HTTPException, Query
+from fastapi import FastAPI, File, UploadFile, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 import datetime
@@ -15,6 +15,56 @@ import uuid
 from typing import Optional, Dict
 from fpdf import FPDF
 from fastapi.responses import FileResponse
+
+import openai
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+MYSQL_URL = os.getenv("MYSQL_URL")
+
+client = openai.OpenAI(api_key=OPENAI_API_KEY)
+from sqlalchemy import create_engine, text
+
+engine = create_engine(MYSQL_URL)
+
+TABLE_SCHEMA = """
+Table name: fir_records_CAW
+Columns:
+fir_no VARCHAR(20),
+ipc_sections VARCHAR(255),
+district VARCHAR(100),
+date DATE,
+description TEXT,
+police_station VARCHAR(100),
+case_status VARCHAR(50),
+major_head VARCHAR(100)
+"""
+
+SYSTEM_PROMPT = f"""
+You are a helpful assistant for police data analysis. You answer questions about the FIR database with the following schema:
+{TABLE_SCHEMA}
+
+IMPORTANT:
+- For comparisons (e.g., year-wise, district-wise), ALWAYS generate a single SQL query using GROUP BY or WHERE ... IN (...).
+- NEVER generate multiple SQL statements separated by semicolons.
+- For example, for 'Compare rape cases from 2021 to 2024', generate:
+  SELECT YEAR(date) as year, COUNT(*) as count FROM fir_records_CAW WHERE major_head LIKE '%rape%' AND YEAR(date) IN (2021,2022,2023,2024) GROUP BY YEAR(date);
+- For counts, use SELECT COUNT(*).
+- For lists, use SELECT * with appropriate WHERE clauses.
+- Only return the SQL query, nothing else.
+
+EXAMPLES:
+Q: Compare rape cases from 2021 to 2024
+A: SELECT YEAR(date) as year, COUNT(*) as count FROM fir_records_CAW WHERE major_head LIKE '%rape%' AND YEAR(date) IN (2021,2022,2023,2024) GROUP BY YEAR(date);
+
+Q: Compare theft cases in 2022 and 2023
+A: SELECT YEAR(date) as year, COUNT(*) as count FROM fir_records_CAW WHERE major_head LIKE '%theft%' AND YEAR(date) IN (2022,2023) GROUP BY YEAR(date);
+
+Q: How many rape cases in 2024?
+A: SELECT COUNT(*) FROM fir_records_CAW WHERE major_head LIKE '%rape%' AND YEAR(date) = 2024;
+"""
 
 app = FastAPI()
 # app = FastAPI()
@@ -382,6 +432,83 @@ async def custom_instruction_injury(input: CustomInstructionInput):
         "extracted_entities": complete_data,  
         "gpt_response": gpt_response
     }
+
+@app.post("/chat")
+async def chat(request: Request):
+    data = await request.json()
+    user_message = data["message"]
+    chat_history = data.get("history", [])
+
+    # Check for simple acknowledgments
+    simple_responses = ["okay", "ok", "thanks", "thank you", "good", "fine", "yes", "no", "nothing"]
+    if user_message.lower().strip() in simple_responses:
+        return {"answer": "Understood! How else can I help you with the FIR data?", "sql": "SELECT 'Acknowledged' as response"}
+
+    sql_query = ""  # Always initialize
+
+    # Build messages for OpenAI to generate SQL - SANITIZE ALL CONTENT
+    messages = [{"role": "system", "content": SYSTEM_PROMPT}]
+    for turn in chat_history:
+        user_content = str(turn.get("user", "")) if turn.get("user") is not None else ""
+        bot_content = str(turn.get("bot", "")) if turn.get("bot") is not None else ""
+        
+        if user_content.strip():
+            messages.append({"role": "user", "content": user_content})
+        if bot_content.strip():
+            messages.append({"role": "assistant", "content": bot_content})
+    
+    messages.append({"role": "user", "content": str(user_message)})
+
+    try:
+        # Step 1: Use OpenAI to convert question to SQL
+        response = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=messages,
+            max_tokens=300,
+            temperature=0,
+        )
+        sql_query = response.choices[0].message.content.strip().strip("```sql").strip("```").strip()
+
+        # Reject multiple SQL statements
+        if ';' in sql_query:
+            return {"error": "Invalid SQL: multiple statements detected. Please rephrase your question.", "sql": sql_query}
+
+        # After generating sql_query, check if it looks like SQL
+        if not sql_query.strip().upper().startswith(('SELECT', 'INSERT', 'UPDATE', 'DELETE', 'SHOW', 'DESCRIBE')):
+            return {"answer": "I understand. How else can I help you with the FIR data?", "sql": "SELECT 'Acknowledged' as response"}
+
+        # Step 2: Run SQL query
+        with engine.connect() as conn:
+            result = conn.execute(text(sql_query))
+            lower_sql = sql_query.lower()
+            
+            # Check if it's a simple acknowledgment query
+            if "acknowledged" in lower_sql or "welcome" in lower_sql:
+                row = result.fetchone()
+                response_text = row[0] if row is not None else "Understood!"
+                return {"answer": response_text, "sql": sql_query}
+            elif "count" in lower_sql and "group by" not in lower_sql:
+                row = result.fetchone()
+                count = row[0] if row is not None else 0
+                # Step 3: Generate a conversational response using OpenAI
+                conv_prompt = [
+                    {"role": "system", "content": "You are a helpful assistant for police data analysis. Given a user's question and the answer from the database, reply in a natural, conversational way."},
+                    {"role": "user", "content": f"User question: {user_message}\nDatabase answer: {count}"}
+                ]
+                conv_response = client.chat.completions.create(
+                    model="gpt-3.5-turbo",
+                    messages=conv_prompt,
+                    max_tokens=100,
+                    temperature=0,
+                )
+                natural_reply = conv_response.choices[0].message.content.strip()
+                return {"answer": natural_reply, "count": count, "sql": sql_query}
+            else:
+                # For SELECT * queries, return the rows directly
+                rows = [dict(row) for row in result.mappings()]
+                return {"answer": rows, "sql": sql_query}
+    except Exception as e:
+        return {"error": str(e), "sql": sql_query}
 
 if __name__ == "__main__":
     uvicorn.run(app, host='127.0.0.1', port=5000)
